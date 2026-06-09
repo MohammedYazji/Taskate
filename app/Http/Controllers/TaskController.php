@@ -1,0 +1,78 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Enums\Priority;
+use App\Enums\TaskStatus;
+use App\Models\Task;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Repositories\Interfaces\TaskRepositoryInterface;
+use Illuminate\Validation\Rules\Enum;
+
+class TaskController extends Controller
+{
+    protected $taskRepository;
+
+    public function __construct(TaskRepositoryInterface $taskRepository)
+    {
+        $this->taskRepository = $taskRepository;
+    }
+
+
+    // === Get all tasks for the auth user ===
+    public function index()
+    {
+        $user = Auth::id();
+        $tasks = $this->taskRepository->getByUser($user);
+
+        // render the view
+        return view("tasks.index", $tasks);
+    }
+
+    // === Create a new task ===
+    public function store(Request $request)
+    {
+        $user = Auth::id();
+        $data = $request->validate([
+            'title' => 'required|string|min:3|max:255',
+            'description' => 'nullable|string',
+            'is_recurring'=> 'booleans|nullable',
+            'priority' => [new Enum(Priority::class)],
+            'status' => [new Enum(TaskStatus::class)],
+            'due_date' => 'nullable|date'
+        ]);
+
+        $clean = array_merge($data, ['user_id' => $user]);
+
+        $this->taskRepository->create($clean);
+
+        return redirect()->route('tasks.index');
+    }
+
+    // === Update a task ===
+    public function update(Request $request, Task $task)
+    {
+        $data = $request->validate([
+            'title' => 'required|string|min:3|max:255',
+            'description' => 'nullable|string',
+            'is_recurring'=> 'boolean|nullable',
+            'priority' => [new Enum(Priority::class)],
+            'status' => [new Enum(TaskStatus::class)],
+            'due_date' => 'nullable|date'
+        ]);
+
+        $this->taskRepository->update($task, $data);
+
+        return redirect()->route('tasks.index');
+    }
+
+    // === Remove a task ===
+    public function destroy(Task $task)
+    {
+        $this->taskRepository->delete($task);
+
+        return redirect()->route('tasks.index');
+    }
+}
+

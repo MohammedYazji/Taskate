@@ -56,9 +56,15 @@
             <div class="flex flex-wrap gap-2">
                 @foreach($tags as $tag)
                 <label class="flex items-center gap-1.5 cursor-pointer">
+                    @if($alpine)
+                    <input type="checkbox" name="tag_ids[]" value="{{ $tag->id }}"
+                        x-model="editTask.tag_ids"
+                        class="rounded border-gray-300 text-violet-600">
+                    @else
                     <input type="checkbox" name="tag_ids[]" value="{{ $tag->id }}"
                         {{ $task && $task->tags->contains($tag->id) ? 'checked' : '' }}
                         class="rounded border-gray-300 text-violet-600">
+                    @endif
                     <span class="text-xs px-2 py-0.5 rounded-full text-white"
                         style="background-color: {{ $tag->color }}">
                         {{ $tag->name }}

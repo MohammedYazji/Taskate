@@ -1,7 +1,7 @@
 <x-app-layout>
     <div x-data="{
         editOpen: false,
-        editTask: { id: null, title: '', description: '', priority: 'medium', due_date: '', is_recurring: false },
+        editTask: { id: null, title: '', description: '', priority: 'medium', due_date: '', is_recurring: false, tag_ids: [] },
         newOpen: false
     }"
          x-on:open-task-panel.document="newOpen = true">
@@ -156,7 +156,8 @@
                                         description: {{ json_encode($task->description) }},
                                         priority: {{ json_encode($task->priority->value) }},
                                         due_date: {{ json_encode($task->due_date ? $task->due_date->format('Y-m-d') : '') }},
-                                        is_recurring: {{ $task->is_recurring ? 'true' : 'false' }}
+                                        is_recurring: {{ $task->is_recurring ? 'true' : 'false' }},
+                                        tag_ids: {{ json_encode($task->tags->pluck('id')->toArray()) }}
                                     };
                                     editOpen = true"
                                 class="p-1.5 text-gray-300 hover:text-violet-500 hover:bg-violet-50 rounded-lg transition"

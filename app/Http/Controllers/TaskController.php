@@ -81,6 +81,13 @@ class TaskController extends Controller
     }
 
     // === Remove a task ===
+    public function toggleComplete(Task $task)
+    {
+        $this->taskRepository->toggleComplete($task);
+
+        return redirect()->back();
+    }
+
     public function destroy(Task $task)
     {
         $this->taskRepository->delete($task);

@@ -41,6 +41,14 @@ class TaskRepository implements TaskRepositoryInterface
     }
 
     // === Count of all tasks of a specific user ===
+    public function toggleComplete(Task $task): Task
+    {
+        $task->update([
+            'status' => $task->status === TaskStatus::Done ? TaskStatus::Todo : TaskStatus::Done,
+        ]);
+        return $task->fresh();
+    }
+
     public function countByUser(int $userId): int
     {
         return Task::where('user_id', $userId)->count();

@@ -14,8 +14,21 @@
         <div class="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
             @forelse($tasks as $task)
             <div class="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition">
-                <div class="w-5 h-5 rounded border-2 border-gray-300 flex-shrink-0"></div>
-                <span class="flex-1 text-sm text-gray-800">{{ $task->title }}</span>
+                <form method="POST" action="{{ route('tasks.toggle', $task) }}" class="inline">
+                    @csrf @method('PATCH')
+                    <button type="submit"
+                        class="w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center cursor-pointer transition
+                        {{ $task->status === \App\Enums\TaskStatus::Done
+                            ? 'bg-violet-600 border-violet-600 hover:bg-violet-700'
+                            : 'border-gray-300 hover:border-violet-400' }}">
+                        @if($task->status === \App\Enums\TaskStatus::Done)
+                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        @endif
+                    </button>
+                </form>
+                <span class="flex-1 text-sm {{ $task->status === \App\Enums\TaskStatus::Done ? 'line-through text-gray-400' : 'text-gray-800' }}">{{ $task->title }}</span>
                 @php
                     $colors = [
                         'high'   => 'text-red-500 bg-red-50',
@@ -39,7 +52,7 @@
         </div>
 
         {{-- Overlay --}}
-        <div x-show="open"
+        <div x-show="open" x-cloak
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
@@ -51,7 +64,7 @@
         </div>
 
         {{-- Slide-in Panel --}}
-        <div x-show="open"
+        <div x-show="open" x-cloak @click.stop
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="translate-x-full"
              x-transition:enter-end="translate-x-0"

@@ -20,6 +20,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Task Resources
+    Route::patch('/tasks/{task}/toggle', [TaskController::class, 'toggleComplete'])
+        ->name('tasks.toggle');
+
     Route::resource('tasks', TaskController::class)
         ->only(['index', 'store', 'update', 'destroy']);
 });

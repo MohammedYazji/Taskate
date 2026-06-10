@@ -50,6 +50,21 @@
                 @if($alpine) x-model="editTask.due_date" @endif
                 class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500">
         </div>
+
+        <div>
+            <label class="flex items-center gap-2 cursor-pointer">
+                @if($alpine)
+                    <input type="checkbox" name="is_recurring" value="1" x-model="editTask.is_recurring"
+                        class="w-4 h-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500">
+                @else
+                    <input type="hidden" name="is_recurring" value="0">
+                    <input type="checkbox" name="is_recurring" value="1"
+                        {{ $task && $task->is_recurring ? 'checked' : '' }}
+                        class="w-4 h-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500">
+                @endif
+                <span class="text-sm text-gray-700">Recurring task</span>
+            </label>
+        </div>
     </div>
 
     <div class="px-6 py-4 border-t border-gray-200">

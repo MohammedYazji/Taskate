@@ -20,14 +20,27 @@ class TaskController extends Controller
     }
 
 
-    // === Get all tasks for the auth user ===
+    // === Get all tasks for the auth user, with all stats ===
+    public function dashboard()
+    {
+        $user = Auth::id();
+        $tasks = $this->taskRepository->getByUser($user);
+        $totalTasks = $this->taskRepository->countByUser($user);
+        $completedTasks = $this->taskRepository->countCompleted($user);
+        $overdueTasks = $this->taskRepository->countOverdue($user);
+        $tasksDueToday = $this->taskRepository->countDueToday($user);
+
+        return view('dashboard', compact(
+            'tasks', 'totalTasks', 'completedTasks', 'overdueTasks', 'tasksDueToday'
+        ));
+    }
+
     public function index()
     {
         $user = Auth::id();
         $tasks = $this->taskRepository->getByUser($user);
 
-        // render the view
-        return view("tasks.index", $tasks);
+        return view('tasks.index', compact('tasks'));
     }
 
     // === Create a new task ===
@@ -37,7 +50,7 @@ class TaskController extends Controller
         $data = $request->validate([
             'title' => 'required|string|min:3|max:255',
             'description' => 'nullable|string',
-            'is_recurring'=> 'booleans|nullable',
+            'is_recurring'=> 'boolean|nullable',
             'priority' => [new Enum(Priority::class)],
             'status' => [new Enum(TaskStatus::class)],
             'due_date' => 'nullable|date'
@@ -47,7 +60,7 @@ class TaskController extends Controller
 
         $this->taskRepository->create($clean);
 
-        return redirect()->route('tasks.index');
+        return redirect()->route('dashboard');
     }
 
     // === Update a task ===
@@ -64,7 +77,7 @@ class TaskController extends Controller
 
         $this->taskRepository->update($task, $data);
 
-        return redirect()->route('tasks.index');
+        return redirect()->route('dashboard');
     }
 
     // === Remove a task ===
@@ -72,7 +85,7 @@ class TaskController extends Controller
     {
         $this->taskRepository->delete($task);
 
-        return redirect()->route('tasks.index');
+        return redirect()->route('dashboard');
     }
 }
 

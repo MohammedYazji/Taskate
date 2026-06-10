@@ -12,4 +12,8 @@ interface TaskRepositoryInterface
     public function create(array $data): Task;
     public function update(Task $task, array $data): Task;
     public function delete(Task $task): bool;
+    public function countByUser(int $userId): int;
+    public function countCompleted(int $userId): int;
+    public function countOverdue(int $userId): int;
+    public function countDueToday(int $userId): int;
 }

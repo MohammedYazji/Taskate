@@ -1,5 +1,10 @@
 <x-app-layout>
-    <div>
+    <div x-data="{
+        editOpen: false,
+        editTask: { id: null, title: '', description: '', priority: 'medium', due_date: '' },
+        newOpen: false
+    }"
+         x-on:open-task-panel.document="newOpen = true">
     <div class="flex gap-6">
 
         {{-- Left Column --}}
@@ -86,14 +91,18 @@
 
                 <div class="divide-y divide-gray-100">
                     @forelse($tasks as $task)
-                    <div class="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition group">
 
                         {{-- Checkbox --}}
-                        <div class="w-5 h-5 rounded border-2 flex-shrink-0
-                            {{ $task->status === \App\Enums\TaskStatus::Done
-                                ? 'bg-violet-600 border-violet-600'
-                                : 'border-gray-300' }}">
-                        </div>
+                        <form method="POST">
+                            @csrf @method('PATCH')
+                            <button type="submit"
+                                class="w-5 h-5 rounded border-2 flex-shrink-0 cursor-pointer transition
+                                {{ $task->status === \App\Enums\TaskStatus::Done
+                                    ? 'bg-violet-600 border-violet-600'
+                                    : 'border-gray-300 hover:border-violet-400' }}">
+                            </button>
+                        </form>
 
                         {{-- Title + Project --}}
                         <div class="flex-1 min-w-0">
@@ -130,6 +139,36 @@
                             </svg>
                             {{ $task->due_date ? $task->due_date->format('M j') : '—' }}
                             @endif
+                        </div>
+
+                        {{-- Actions --}}
+                        <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                            <a href="#"
+                                @click.prevent="
+                                    editTask = {
+                                        id: {{ $task->id }},
+                                        title: {{ json_encode($task->title) }},
+                                        description: {{ json_encode($task->description) }},
+                                        priority: {{ json_encode($task->priority->value) }},
+                                        due_date: {{ json_encode($task->due_date ? $task->due_date->format('Y-m-d') : '') }}
+                                    };
+                                    editOpen = true"
+                                class="p-1.5 text-gray-300 hover:text-violet-500 hover:bg-violet-50 rounded-lg transition"
+                                title="Edit">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                            </a>
+                            <form method="POST" action="{{ route('tasks.destroy', $task) }}" onsubmit="return confirm('Are you sure you want to delete this task?')">
+                                @csrf @method('DELETE')
+                                <button type="submit"
+                                    class="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
+                                    title="Delete">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </form>
                         </div>
 
                     </div>
@@ -211,6 +250,70 @@
 
         </div>
     </div>
+
+    {{-- Edit Task Panel --}}
+    <div x-show="editOpen" x-cloak @click="editOpen = false"
+            class="fixed inset-0 bg-black/30 z-40"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0">
+        </div>
+
+        <div x-show="editOpen" x-cloak
+            class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="translate-x-full"
+            x-transition:enter-end="translate-x-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="translate-x-0"
+            x-transition:leave-end="translate-x-full">
+
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Edit Task</h2>
+                <button @click="editOpen = false" class="text-gray-400 hover:text-gray-600 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <x-task-form alpine x-bind:action="`/tasks/${editTask.id}`" />
+        </div>
+
+    {{-- New Task Panel --}}
+    <div x-show="newOpen" x-cloak @click="newOpen = false"
+            class="fixed inset-0 bg-black/30 z-40"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0">
+        </div>
+
+        <div x-show="newOpen" x-cloak
+            class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="translate-x-full"
+            x-transition:enter-end="translate-x-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="translate-x-0"
+            x-transition:leave-end="translate-x-full">
+
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">New Task</h2>
+                <button @click="newOpen = false" class="text-gray-400 hover:text-gray-600 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <x-task-form />
+        </div>
 
     </div>
 

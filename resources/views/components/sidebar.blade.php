@@ -10,6 +10,14 @@
         <span class="text-base font-semibold tracking-tight">Taskate</span>
     </div>
 
+    {{-- New Task Button --}}
+    <div class="px-4 pb-4">
+        <button onclick="document.dispatchEvent(new CustomEvent('open-task-panel'))"
+            class="w-full bg-violet-600 hover:bg-violet-700 transition text-white text-sm font-medium py-2.5 rounded-lg flex items-center justify-center gap-2">
+            <span class="text-lg leading-none">+</span> New Task
+        </button>
+    </div>
+
     {{-- Nav Links --}}
     <nav class="flex-1 px-3 space-y-0.5">
         <a href="{{ route('dashboard') }}"

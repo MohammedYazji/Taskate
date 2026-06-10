@@ -1,4 +1,4 @@
-@props(['task' => null, 'alpine' => false])
+@props(['task' => null, 'alpine' => false, 'tags' => []])
 
 <form
     @if(!$alpine)
@@ -49,6 +49,27 @@
                 @if(!$alpine) value="{{ $task && $task->due_date ? $task->due_date->format('Y-m-d') : '' }}" @endif
                 @if($alpine) x-model="editTask.due_date" @endif
                 class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+            <div class="flex flex-wrap gap-2">
+                @foreach($tags as $tag)
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" name="tag_ids[]" value="{{ $tag->id }}"
+                        {{ $task && $task->tags->contains($tag->id) ? 'checked' : '' }}
+                        class="rounded border-gray-300 text-violet-600">
+                    <span class="text-xs px-2 py-0.5 rounded-full text-white"
+                        style="background-color: {{ $tag->color }}">
+                        {{ $tag->name }}
+                    </span>
+                </label>
+                @endforeach
+
+                @if(count($tags) === 0)
+                <p class="text-xs text-gray-400">No tags yet — create some in settings</p>
+                @endif
+            </div>
         </div>
 
         <div>

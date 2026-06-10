@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\Priority;
 use App\Enums\TaskStatus;
 use App\Models\Task;
+use App\Repositories\Interfaces\TagRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\Interfaces\TaskRepositoryInterface;
@@ -12,12 +13,12 @@ use Illuminate\Validation\Rules\Enum;
 
 class TaskController extends Controller
 {
-    protected $taskRepository;
 
-    public function __construct(TaskRepositoryInterface $taskRepository)
-    {
-        $this->taskRepository = $taskRepository;
-    }
+    public function __construct(
+        protected TaskRepositoryInterface $taskRepository,
+        protected TagRepositoryInterface $tagRepository
+        )
+    {}
 
 
     // === Get all tasks for the auth user, with all stats ===
@@ -29,9 +30,10 @@ class TaskController extends Controller
         $completedTasks = $this->taskRepository->countCompleted($user);
         $overdueTasks = $this->taskRepository->countOverdue($user);
         $tasksDueToday = $this->taskRepository->countDueToday($user);
+        $tags = $this->tagRepository->getByUser($user);
 
         return view('dashboard', compact(
-            'tasks', 'totalTasks', 'completedTasks', 'overdueTasks', 'tasksDueToday'
+            'tasks', 'totalTasks', 'completedTasks', 'overdueTasks', 'tasksDueToday', 'tags'
         ));
     }
 
@@ -39,8 +41,9 @@ class TaskController extends Controller
     {
         $user = Auth::id();
         $tasks = $this->taskRepository->getByUser($user);
+        $tags = $this->tagRepository->getByUser($user);
 
-        return view('tasks.index', compact('tasks'));
+        return view('tasks.index', compact('tasks', 'tags'));
     }
 
     // === Create a new task ===
@@ -58,7 +61,12 @@ class TaskController extends Controller
 
         $clean = array_merge($data, ['user_id' => $user]);
 
-        $this->taskRepository->create($clean);
+        $task = $this->taskRepository->create($clean);
+
+        if ($request->has('tag_ids'))
+        {
+            $this->tagRepository->attachToTask($task, $request->tag_ids);
+        }
 
         return redirect()->route('dashboard');
     }
@@ -76,6 +84,9 @@ class TaskController extends Controller
         ]);
 
         $this->taskRepository->update($task, $data);
+
+        // sync tags (replaces old selection with new)
+        $this->tagRepository->syncTaskTags($task, $request->tag_ids ?? []);
 
         return redirect()->route('dashboard');
     }

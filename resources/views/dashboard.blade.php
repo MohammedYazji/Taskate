@@ -286,7 +286,7 @@
                 </button>
             </div>
 
-            <x-task-form alpine x-bind:action="`/tasks/${editTask.id}`" />
+            <x-task-form alpine :tags="$tags" x-bind:action="`/tasks/${editTask.id}`" />
         </div>
 
     {{-- New Task Panel --}}
@@ -318,7 +318,7 @@
                 </button>
             </div>
 
-            <x-task-form />
+            <x-task-form :tags="$tags" />
         </div>
 
     </div>

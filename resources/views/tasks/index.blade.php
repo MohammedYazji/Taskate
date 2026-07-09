@@ -83,7 +83,7 @@
                 </button>
             </div>
 
-            <x-task-form :tags="$tags" />
+            <x-task-form :tags="$tags" :projects="$projects" />
         </div>
 
     </div>

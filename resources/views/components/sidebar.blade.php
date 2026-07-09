@@ -34,8 +34,8 @@
             </svg>
             My Tasks
         </a>
-        <a href="#"
-            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-white/5 transition">
+        <a href="{{ route('projects.index') }}"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm {{ request()->routeIs('projects.*') ? 'bg-violet-600/20 text-violet-400' : 'text-gray-400 hover:text-white hover:bg-white/5' }} transition">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h4v4H3zM3 14h4v4H3zM10 7h11M10 12h11M10 17h11"/>
             </svg>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\Priority;
 use App\Enums\TaskStatus;
 use App\Models\Task;
+use App\Repositories\Interfaces\ProjectRepositoryInterface;
 use App\Repositories\Interfaces\TagRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +17,8 @@ class TaskController extends Controller
 
     public function __construct(
         protected TaskRepositoryInterface $taskRepository,
-        protected TagRepositoryInterface $tagRepository
+        protected TagRepositoryInterface $tagRepository,
+        protected ProjectRepositoryInterface $projectRepository
         )
     {}
 
@@ -31,9 +33,10 @@ class TaskController extends Controller
         $overdueTasks = $this->taskRepository->countOverdue($user);
         $tasksDueToday = $this->taskRepository->countDueToday($user);
         $tags = $this->tagRepository->getByUser($user);
+        $projects = $this->projectRepository->getByUser($user);
 
         return view('dashboard', compact(
-            'tasks', 'totalTasks', 'completedTasks', 'overdueTasks', 'tasksDueToday', 'tags'
+            'tasks', 'totalTasks', 'completedTasks', 'overdueTasks', 'tasksDueToday', 'tags', 'projects'
         ));
     }
 
@@ -42,8 +45,9 @@ class TaskController extends Controller
         $user = Auth::id();
         $tasks = $this->taskRepository->getByUser($user);
         $tags = $this->tagRepository->getByUser($user);
+        $projects = $this->projectRepository->getByUser($user);
 
-        return view('tasks.index', compact('tasks', 'tags'));
+        return view('tasks.index', compact('tasks', 'tags', 'projects'));
     }
 
     // === Create a new task ===
@@ -56,7 +60,8 @@ class TaskController extends Controller
             'is_recurring'=> 'boolean|nullable',
             'priority' => [new Enum(Priority::class)],
             'status' => [new Enum(TaskStatus::class)],
-            'due_date' => 'nullable|date'
+            'due_date' => 'nullable|date',
+            'project_id' => 'nullable|integer|exists:projects,id'
         ]);
 
         $clean = array_merge($data, ['user_id' => $user]);
@@ -80,7 +85,8 @@ class TaskController extends Controller
             'is_recurring'=> 'boolean|nullable',
             'priority' => [new Enum(Priority::class)],
             'status' => [new Enum(TaskStatus::class)],
-            'due_date' => 'nullable|date'
+            'due_date' => 'nullable|date',
+            'project_id' => 'nullable|integer|exists:projects,id'
         ]);
 
         $this->taskRepository->update($task, $data);

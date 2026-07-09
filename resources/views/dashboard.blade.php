@@ -1,7 +1,7 @@
 <x-app-layout>
     <div x-data="{
         editOpen: false,
-        editTask: { id: null, title: '', description: '', priority: 'medium', due_date: '', is_recurring: false, tag_ids: [] },
+        editTask: { id: null, title: '', description: '', priority: 'medium', due_date: '', is_recurring: false, tag_ids: [], project_id: '' },
         newOpen: false
     }"
          x-on:open-task-panel.document="newOpen = true">
@@ -114,7 +114,9 @@
                             <p class="text-sm {{ $task->status === \App\Enums\TaskStatus::Done ? 'line-through text-gray-400' : 'text-gray-800' }}">
                                 {{ $task->title }}
                             </p>
-                            <p class="text-xs {{ $task->status === \App\Enums\TaskStatus::Done ? 'text-green-400' : 'text-gray-400' }} mt-0.5">No project</p>
+                            <p class="text-xs {{ $task->status === \App\Enums\TaskStatus::Done ? 'text-green-400' : 'text-gray-400' }} mt-0.5">
+                                {{ $task->project ? $task->project->name : 'No project' }}
+                            </p>
                         </div>
 
                         {{-- Priority --}}
@@ -157,7 +159,8 @@
                                         priority: {{ json_encode($task->priority->value) }},
                                         due_date: {{ json_encode($task->due_date ? $task->due_date->format('Y-m-d') : '') }},
                                         is_recurring: {{ $task->is_recurring ? 'true' : 'false' }},
-                                        tag_ids: {{ json_encode($task->tags->pluck('id')->toArray()) }}
+                                        tag_ids: {{ json_encode($task->tags->pluck('id')->toArray()) }},
+                                        project_id: {{ json_encode($task->project_id) }}
                                     };
                                     editOpen = true"
                                 class="p-1.5 text-gray-300 hover:text-violet-500 hover:bg-violet-50 rounded-lg transition"
@@ -287,7 +290,7 @@
                 </button>
             </div>
 
-            <x-task-form alpine :tags="$tags" x-bind:action="`/tasks/${editTask.id}`" />
+            <x-task-form alpine :tags="$tags" :projects="$projects" x-bind:action="`/tasks/${editTask.id}`" />
         </div>
 
     {{-- New Task Panel --}}
@@ -319,7 +322,7 @@
                 </button>
             </div>
 
-            <x-task-form :tags="$tags" />
+            <x-task-form :tags="$tags" :projects="$projects" />
         </div>
 
     </div>

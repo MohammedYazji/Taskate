@@ -30,11 +30,10 @@ class Task extends Model
         return $this->belongsTo(User::class);
     }
 
-    // TODO: add it when make the project model
-    // public function project(): BelongsTo
-    // {
-    //     return $this->belongsTo(Project::class);
-    // }
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
 
     public function tags(): BelongsToMany
     {

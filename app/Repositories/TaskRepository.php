@@ -12,7 +12,7 @@ class TaskRepository implements TaskRepositoryInterface
     // === Get all the user Tasks ===
     public function getByUser(int $userId): Collection
     {
-        return Task::with('project', 'tags')->where("user_id", $userId)->get();
+        return Task::with('project', 'tags', 'subtasks')->where("user_id", $userId)->get();
     }
 
     // === Fetch a task via it's id ===

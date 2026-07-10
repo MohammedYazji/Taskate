@@ -1,7 +1,7 @@
 <x-app-layout>
     <div x-data="{
         editOpen: false,
-        editTask: { id: null, title: '', description: '', priority: 'medium', due_date: '', is_recurring: false, tag_ids: [], project_id: '' },
+        editTask: { id: null, title: '', description: '', priority: 'medium', due_date: '', is_recurring: false, tag_ids: [], project_id: '', subtasks: [] },
         newOpen: false
     }"
          x-on:open-task-panel.document="newOpen = true">
@@ -117,6 +117,11 @@
                             <p class="text-xs {{ $task->status === \App\Enums\TaskStatus::Done ? 'text-green-400' : 'text-gray-400' }} mt-0.5">
                                 {{ $task->project ? $task->project->name : 'No project' }}
                             </p>
+                            @if($task->subtasks->count() > 0)
+                            <p class="text-xs text-gray-400 mt-0.5">
+                                {{ $task->subtasks->where('is_completed', true)->count() }}/{{ $task->subtasks->count() }} subtasks
+                            </p>
+                            @endif
                         </div>
 
                         {{-- Priority --}}
@@ -160,7 +165,8 @@
                                         due_date: {{ json_encode($task->due_date ? $task->due_date->format('Y-m-d') : '') }},
                                         is_recurring: {{ $task->is_recurring ? 'true' : 'false' }},
                                         tag_ids: {{ json_encode($task->tags->pluck('id')->toArray()) }},
-                                        project_id: {{ json_encode($task->project_id) }}
+                                        project_id: {{ json_encode($task->project_id) }},
+                                        subtasks: {{ json_encode($task->subtasks->map(fn($s) => ['id' => $s->id, 'title' => $s->title, 'is_completed' => $s->is_completed])->toArray()) }}
                                     };
                                     editOpen = true"
                                 class="p-1.5 text-gray-300 hover:text-violet-500 hover:bg-violet-50 rounded-lg transition"
@@ -290,7 +296,60 @@
                 </button>
             </div>
 
-            <x-task-form alpine :tags="$tags" :projects="$projects" x-bind:action="`/tasks/${editTask.id}`" />
+            <div class="overflow-y-auto">
+                <x-task-form alpine :tags="$tags" :projects="$projects" x-bind:action="`/tasks/${editTask.id}`" />
+
+                <template x-if="editTask.subtasks.length >= 0">
+                    <div class="px-6 py-4 border-t border-gray-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-semibold text-gray-900">
+                                Subtasks
+                                <span x-show="editTask.subtasks.length > 0" class="text-xs text-gray-400 font-normal"
+                                    x-text="`(${editTask.subtasks.filter(s => s.is_completed).length}/${editTask.subtasks.length})`">
+                                </span>
+                            </h3>
+                        </div>
+
+                        <div class="space-y-1.5 mb-3">
+                            <template x-for="(subtask, index) in editTask.subtasks" :key="subtask.id">
+                                <div class="flex items-center gap-2 group">
+                                    <form method="POST" x-bind:action="`/subtasks/${subtask.id}/toggle`" class="inline">
+                                        @csrf @method('PATCH')
+                                        <button type="submit"
+                                            class="w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition"
+                                            x-bind:class="subtask.is_completed ? 'bg-violet-600 border-violet-600' : 'border-gray-300 hover:border-violet-400'">
+                                            <svg x-show="subtask.is_completed" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                    <span class="flex-1 text-xs" x-text="subtask.title"
+                                        x-bind:class="subtask.is_completed ? 'line-through text-gray-400' : 'text-gray-700'">
+                                    </span>
+                                    <form method="POST" x-bind:action="`/subtasks/${subtask.id}`" class="inline opacity-0 group-hover:opacity-100 transition">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="p-0.5 text-gray-300 hover:text-red-500 transition" title="Delete">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </template>
+                        </div>
+
+                        <form method="POST" x-bind:action="`/tasks/${editTask.id}/subtasks`" class="flex gap-2">
+                            @csrf
+                            <input type="text" name="title" required maxlength="255" placeholder="Add a subtask..."
+                                class="flex-1 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent">
+                            <button type="submit"
+                                class="bg-violet-600 hover:bg-violet-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition whitespace-nowrap">
+                                Add
+                            </button>
+                        </form>
+                    </div>
+                </template>
+            </div>
         </div>
 
     {{-- New Task Panel --}}

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreTagRequest;
 use App\Models\Tag;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\Interfaces\TagRepositoryInterface;
 
@@ -23,24 +23,20 @@ class TagController extends Controller
         return view('tags.index', compact('tags'));
     }
 
-    public function store(Request $request)
+    public function store(StoreTagRequest $request)
     {
-        $data = $request->validate([
-            'name'  => 'required|string|max:50',
-            'color' => ['required', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
-        ]);
+        $data = $request->validated();
 
         $this->tagRepository->create(array_merge($data, ['user_id' => Auth::id()]));
 
         return redirect()->route('tags.index');
     }
 
-    public function update(Request $request, Tag $tag)
+    public function update(StoreTagRequest $request, Tag $tag)
     {
-        $data = $request->validate([
-            'name'  => 'required|string|max:50',
-            'color' => ['required', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
-        ]);
+        $this->authorize('update', $tag);
+
+        $data = $request->validated();
 
         $this->tagRepository->update($tag, $data);
 
@@ -49,6 +45,8 @@ class TagController extends Controller
 
     public function destroy(Tag $tag)
     {
+        $this->authorize('delete', $tag);
+
         $this->tagRepository->delete($tag);
 
         return redirect()->route('tags.index');

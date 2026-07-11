@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Priority;
-use App\Enums\TaskStatus;
+use App\Http\Requests\StoreTaskRequest;
+use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Task;
 use App\Repositories\Interfaces\ProjectRepositoryInterface;
 use App\Repositories\Interfaces\TagRepositoryInterface;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\Interfaces\TaskRepositoryInterface;
-use Illuminate\Validation\Rules\Enum;
 
 class TaskController extends Controller
 {
@@ -51,62 +49,59 @@ class TaskController extends Controller
     }
 
     // === Create a new task ===
-    public function store(Request $request)
+    public function store(StoreTaskRequest $request)
     {
         $user = Auth::id();
-        $data = $request->validate([
-            'title' => 'required|string|min:3|max:255',
-            'description' => 'nullable|string',
-            'is_recurring'=> 'boolean|nullable',
-            'priority' => [new Enum(Priority::class)],
-            'status' => [new Enum(TaskStatus::class)],
-            'due_date' => 'nullable|date',
-            'project_id' => 'nullable|integer|exists:projects,id'
-        ]);
+        $data = $request->validated();
 
         $clean = array_merge($data, ['user_id' => $user]);
 
         $task = $this->taskRepository->create($clean);
 
-        if ($request->has('tag_ids'))
+        // Only attach tags the user actually owns
+        $userTagIds = $this->tagRepository->getByUser($user)->pluck('id')->toArray();
+        $allowedTagIds = array_intersect($request->tag_ids ?? [], $userTagIds);
+
+        if (!empty($allowedTagIds))
         {
-            $this->tagRepository->attachToTask($task, $request->tag_ids);
+            $this->tagRepository->attachToTask($task, $allowedTagIds);
         }
 
         return redirect()->route('dashboard');
     }
 
     // === Update a task ===
-    public function update(Request $request, Task $task)
+    public function update(UpdateTaskRequest $request, Task $task)
     {
-        $data = $request->validate([
-            'title' => 'required|string|min:3|max:255',
-            'description' => 'nullable|string',
-            'is_recurring'=> 'boolean|nullable',
-            'priority' => [new Enum(Priority::class)],
-            'status' => [new Enum(TaskStatus::class)],
-            'due_date' => 'nullable|date',
-            'project_id' => 'nullable|integer|exists:projects,id'
-        ]);
+        $this->authorize('update', $task);
+
+        $data = $request->validated();
 
         $this->taskRepository->update($task, $data);
 
-        // sync tags (replaces old selection with new)
-        $this->tagRepository->syncTaskTags($task, $request->tag_ids ?? []);
+        // Only sync tags the user actually owns
+        $userTagIds = $this->tagRepository->getByUser(Auth::id())->pluck('id')->toArray();
+        $allowedTagIds = array_intersect($request->tag_ids ?? [], $userTagIds);
+        $this->tagRepository->syncTaskTags($task, $allowedTagIds);
 
         return redirect()->route('dashboard');
     }
 
-    // === Remove a task ===
+    // === Toggle task completion ===
     public function toggleComplete(Task $task)
     {
+        $this->authorize('update', $task);
+
         $this->taskRepository->toggleComplete($task);
 
         return redirect()->back();
     }
 
+    // === Remove a task ===
     public function destroy(Task $task)
     {
+        $this->authorize('delete', $task);
+
         $this->taskRepository->delete($task);
 
         return redirect()->route('dashboard');

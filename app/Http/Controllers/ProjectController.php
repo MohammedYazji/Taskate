@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreProjectRequest;
 use App\Models\Project;
 use App\Repositories\Interfaces\ProjectRepositoryInterface;
 use App\Repositories\Interfaces\TaskRepositoryInterface;
 use App\Repositories\Interfaces\TagRepositoryInterface;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ProjectController extends Controller
@@ -26,13 +26,9 @@ class ProjectController extends Controller
     }
 
     // === Create a new project ===
-    public function store(Request $request)
+    public function store(StoreProjectRequest $request)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:100',
-            'color' => ['required', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
-            'description' => 'nullable|string|max:500',
-        ]);
+        $data = $request->validated();
 
         $this->projectRepository->create(array_merge($data, ['user_id' => Auth::id()]));
 
@@ -51,15 +47,11 @@ class ProjectController extends Controller
     }
 
     // === Update a project ===
-    public function update(Request $request, Project $project)
+    public function update(StoreProjectRequest $request, Project $project)
     {
         $this->authorize('update', $project);
 
-        $data = $request->validate([
-            'name' => 'required|string|max:100',
-            'color' => ['required', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
-            'description' => 'nullable|string|max:500',
-        ]);
+        $data = $request->validated();
 
         $this->projectRepository->update($project, $data);
 

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SubtaskController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TaskController;
@@ -35,6 +36,9 @@ Route::middleware('auth')->group(function () {
     // Tag Resources
     Route::resource('tags', TagController::class)
         ->only(['index', 'store', 'update', 'destroy']);
+
+    // Search
+    Route::get('/search', [SearchController::class, 'index'])->name('search');
 
     // Task Resources
     Route::patch('/tasks/{task}/toggle', [TaskController::class, 'toggleComplete'])

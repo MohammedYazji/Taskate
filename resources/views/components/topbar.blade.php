@@ -1,11 +1,12 @@
 <header class="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 flex-shrink-0">
-    <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 w-72">
+    <form method="GET" action="{{ route('search') }}"
+        class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 w-72">
         <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
-        <input type="text" placeholder="Search tasks, projects..."
+        <input type="text" name="q" id="search-input" value="{{ request('q') }}" placeholder="Search tasks, projects..."
             class="bg-transparent text-sm text-gray-600 outline-none w-full placeholder-gray-400">
-    </div>
+    </form>
 
     <button class="relative p-2 text-gray-500 hover:text-gray-700 transition">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

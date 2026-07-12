@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Task;
 use App\Repositories\Interfaces\ProjectRepositoryInterface;
 use App\Repositories\Interfaces\TagRepositoryInterface;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\Interfaces\TaskRepositoryInterface;
 
@@ -38,14 +39,15 @@ class TaskController extends Controller
         ));
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::id();
-        $tasks = $this->taskRepository->getByUser($user);
+        $filters = $request->only(['priority', 'status', 'date', 'sort']);
+        $tasks = $this->taskRepository->filter($user, $filters);
         $tags = $this->tagRepository->getByUser($user);
         $projects = $this->projectRepository->getByUser($user);
 
-        return view('tasks.index', compact('tasks', 'tags', 'projects'));
+        return view('tasks.index', compact('tasks', 'tags', 'projects', 'filters'));
     }
 
     // === Create a new task ===

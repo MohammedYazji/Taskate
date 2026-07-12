@@ -17,4 +17,6 @@ interface TaskRepositoryInterface
     public function countCompleted(int $userId): int;
     public function countOverdue(int $userId): int;
     public function countDueToday(int $userId): int;
+    public function search(int $userId, string $query): Collection;
+    public function filter(int $userId, array $filters): Collection;
 }

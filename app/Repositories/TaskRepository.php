@@ -78,4 +78,47 @@ class TaskRepository implements TaskRepositoryInterface
             ->whereDate('due_date', today())
             ->count();
     }
+
+    public function search(int $userId, string $query): Collection
+    {
+        return Task::with('project', 'tags', 'subtasks')
+            ->where('user_id', $userId)
+            ->where('title', 'like', "%{$query}%")
+            ->get();
+    }
+
+    public function filter(int $userId, array $filters): Collection
+    {
+        $q = Task::with('project', 'tags', 'subtasks')
+            ->where('user_id', $userId);
+
+        if (!empty($filters['priority'] ?? null)) {
+            $q->where('priority', $filters['priority']);
+        }
+
+        if (!empty($filters['status'] ?? null)) {
+            if ($filters['status'] === 'done') {
+                $q->where('status', \App\Enums\TaskStatus::Done);
+            } elseif ($filters['status'] === 'todo') {
+                $q->where('status', \App\Enums\TaskStatus::Todo);
+            }
+        }
+
+        if (!empty($filters['date'] ?? null)) {
+            $q->whereDate('due_date', $filters['date']);
+        }
+
+        if (!empty($filters['sort'] ?? null)) {
+            match ($filters['sort']) {
+                'priority' => $q->orderByRaw("FIELD(priority, 'high', 'medium', 'low')"),
+                'date_asc'  => $q->orderBy('due_date', 'asc'),
+                'date_desc' => $q->orderBy('due_date', 'desc'),
+                default     => $q->latest(),
+            };
+        } else {
+            $q->latest();
+        }
+
+        return $q->get();
+    }
 }

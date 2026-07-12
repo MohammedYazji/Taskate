@@ -138,8 +138,11 @@
                         </span>
 
                         {{-- Due Date --}}
-                        @php $isDueToday = $task->due_date && $task->due_date->isToday(); @endphp
-                        <div class="flex items-center gap-1 text-xs {{ $isDueToday ? 'text-red-500 font-medium' : 'text-gray-400' }}">
+                        @php
+                            $isDueToday = $task->due_date && $task->due_date->isToday();
+                            $isOverdue = $task->due_date && $task->due_date->isPast() && $task->status !== \App\Enums\TaskStatus::Done;
+                        @endphp
+                        <div class="flex items-center gap-1 text-xs {{ $isDueToday ? 'text-red-500 font-medium' : ($isOverdue ? 'text-red-600 font-semibold' : 'text-gray-400') }}">
                             @if($isDueToday)
                             <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>
@@ -236,11 +239,13 @@
                         <div></div>
                     @endfor
                     @for($day = 1; $day <= $daysInMonth; $day++)
+                        @php $dayDate = now()->startOfMonth()->addDays($day - 1)->format('Y-m-d'); @endphp
                         <div class="flex items-center justify-center">
-                            <span class="w-7 h-7 flex items-center justify-center text-xs rounded-full
-                                {{ $day === now()->day ? 'bg-violet-600 text-white font-semibold' : 'text-gray-600 hover:bg-gray-100 cursor-pointer' }}">
+                            <a href="{{ route('tasks.index', ['date' => $dayDate]) }}"
+                                class="w-7 h-7 flex items-center justify-center text-xs rounded-full
+                                {{ $day === now()->day ? 'bg-violet-600 text-white font-semibold' : 'text-gray-600 hover:bg-gray-100' }}">
                                 {{ $day }}
-                            </span>
+                            </a>
                         </div>
                     @endfor
                 </div>

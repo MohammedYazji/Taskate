@@ -1,7 +1,7 @@
 <x-app-layout>
     <div x-data="{
         editOpen: false,
-        editTask: { id: null, title: '', description: '', priority: 'medium', due_date: '', is_recurring: false, tag_ids: [], project_id: '', subtasks: [] },
+        editTask: { id: null, title: '', description: '', priority: 'medium', due_date: '', is_recurring: false, tag_ids: [], project_id: '', subtasks: [], comments: [] },
         newOpen: false
     }"
          x-on:open-task-panel.document="newOpen = true">
@@ -169,7 +169,8 @@
                                         is_recurring: {{ $task->is_recurring ? 'true' : 'false' }},
                                         tag_ids: {{ json_encode($task->tags->pluck('id')->toArray()) }},
                                         project_id: {{ json_encode($task->project_id) }},
-                                        subtasks: {{ json_encode($task->subtasks->map(fn($s) => ['id' => $s->id, 'title' => $s->title, 'is_completed' => $s->is_completed])->toArray()) }}
+                                        subtasks: {{ json_encode($task->subtasks->map(fn($s) => ['id' => $s->id, 'title' => $s->title, 'is_completed' => $s->is_completed])->toArray()) }},
+                                        comments: {{ json_encode($task->comments->map(fn($c) => ['id' => $c->id, 'body' => $c->body, 'user_name' => $c->user->name, 'created_at' => $c->created_at->diffForHumans()])->toArray()) }}
                                     };
                                     editOpen = true"
                                 class="p-1.5 text-gray-300 hover:text-violet-500 hover:bg-violet-50 rounded-lg transition"
@@ -354,6 +355,40 @@
                         </form>
                     </div>
                 </template>
+
+                {{-- Activity / Comments --}}
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-3">Activity</h3>
+
+                    <div class="space-y-3 mb-3">
+                        <template x-for="comment in editTask.comments" :key="comment.id">
+                            <div class="flex gap-2">
+                                <div class="w-6 h-6 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center text-xs font-semibold flex-shrink-0 mt-0.5"
+                                    x-text="comment.user_name.charAt(0).toUpperCase()">
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs text-gray-800" x-text="comment.body"></p>
+                                    <div class="flex items-center gap-2 mt-0.5">
+                                        <span class="text-[10px] text-gray-400" x-text="comment.user_name"></span>
+                                        <span class="text-[10px] text-gray-300">·</span>
+                                        <span class="text-[10px] text-gray-400" x-text="comment.created_at"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <form method="POST" x-bind:action="`/tasks/${editTask.id}/comments`" class="flex gap-2">
+                        @csrf
+                        <textarea name="body" required maxlength="1000" placeholder="Write a comment..."
+                            class="flex-1 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none"
+                            rows="2"></textarea>
+                        <button type="submit"
+                            class="bg-violet-600 hover:bg-violet-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition self-end">
+                            Send
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
 

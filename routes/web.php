@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SearchController;
@@ -39,6 +40,10 @@ Route::middleware('auth')->group(function () {
 
     // Search
     Route::get('/search', [SearchController::class, 'index'])->name('search');
+
+    // Comments
+    Route::post('/tasks/{task}/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
     // Task Resources
     Route::patch('/tasks/{task}/toggle', [TaskController::class, 'toggleComplete'])

@@ -12,7 +12,7 @@ class TaskRepository implements TaskRepositoryInterface
     // === Get all the user Tasks ===
     public function getByUser(int $userId): Collection
     {
-        return Task::with('project', 'tags', 'subtasks')->where("user_id", $userId)->get();
+        return Task::with('project', 'tags', 'subtasks', 'comments.user')->where("user_id", $userId)->get();
     }
 
     // === Fetch a task via it's id ===
@@ -81,7 +81,7 @@ class TaskRepository implements TaskRepositoryInterface
 
     public function search(int $userId, string $query): Collection
     {
-        return Task::with('project', 'tags', 'subtasks')
+        return Task::with('project', 'tags', 'subtasks', 'comments.user')
             ->where('user_id', $userId)
             ->where('title', 'like', "%{$query}%")
             ->get();
@@ -89,7 +89,7 @@ class TaskRepository implements TaskRepositoryInterface
 
     public function filter(int $userId, array $filters): Collection
     {
-        $q = Task::with('project', 'tags', 'subtasks')
+        $q = Task::with('project', 'tags', 'subtasks', 'comments.user')
             ->where('user_id', $userId);
 
         if (!empty($filters['priority'] ?? null)) {

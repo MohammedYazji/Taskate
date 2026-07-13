@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Repositories\Interfaces\CommentRepositoryInterface;
+use App\Repositories\CommentRepository;
 use App\Repositories\Interfaces\ProjectRepositoryInterface;
 use App\Repositories\Interfaces\SubtaskRepositoryInterface;
 use App\Repositories\Interfaces\TagRepositoryInterface;
@@ -20,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(CommentRepositoryInterface::class, CommentRepository::class);
+
         $this->app->bind(ProjectRepositoryInterface::class, ProjectRepository::class);
 
         $this->app->bind(SubtaskRepositoryInterface::class, SubtaskRepository::class);

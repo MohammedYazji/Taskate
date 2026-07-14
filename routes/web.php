@@ -4,6 +4,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SprintController;
 use App\Http\Controllers\SubtaskController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TaskController;
@@ -44,6 +45,14 @@ Route::middleware('auth')->group(function () {
     // Comments
     Route::post('/tasks/{task}/comments', [CommentController::class, 'store'])->name('comments.store');
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+
+    // Sprint Routes
+    Route::resource('projects.sprints', SprintController::class)
+        ->shallow()
+        ->only(['index', 'store', 'update', 'destroy']);
+
+    Route::patch('/sprints/{sprint}/activate', [SprintController::class, 'activate'])
+        ->name('sprints.activate');
 
     // Task Resources
     Route::patch('/tasks/{task}/toggle', [TaskController::class, 'toggleComplete'])

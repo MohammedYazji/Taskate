@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Task extends Model
 {
     protected $fillable = [
-        "user_id","project_id","title","description","is_recurring","priority","status", "due_date"
+        "user_id","project_id","sprint_id","title","description","is_recurring","priority","status", "due_date", "position"
     ];
 
     protected function casts(): array
@@ -49,5 +49,10 @@ class Task extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class)->latest();
+    }
+
+    public function sprint(): BelongsTo
+    {
+        return $this->belongsTo(Sprint::class);
     }
 }

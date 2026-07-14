@@ -5,9 +5,11 @@ namespace App\Providers;
 use App\Repositories\Interfaces\CommentRepositoryInterface;
 use App\Repositories\CommentRepository;
 use App\Repositories\Interfaces\ProjectRepositoryInterface;
+use App\Repositories\Interfaces\SprintRepositoryInterface;
 use App\Repositories\Interfaces\SubtaskRepositoryInterface;
 use App\Repositories\Interfaces\TagRepositoryInterface;
 use App\Repositories\ProjectRepository;
+use App\Repositories\SprintRepository;
 use App\Repositories\SubtaskRepository;
 use Illuminate\Support\ServiceProvider;
 use App\Repositories\TaskRepository;
@@ -25,6 +27,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CommentRepositoryInterface::class, CommentRepository::class);
 
         $this->app->bind(ProjectRepositoryInterface::class, ProjectRepository::class);
+
+        $this->app->bind(SprintRepositoryInterface::class, SprintRepository::class);
 
         $this->app->bind(SubtaskRepositoryInterface::class, SubtaskRepository::class);
 

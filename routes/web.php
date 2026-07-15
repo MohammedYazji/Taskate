@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\KanbanController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SearchController;
@@ -53,6 +54,13 @@ Route::middleware('auth')->group(function () {
 
     Route::patch('/sprints/{sprint}/activate', [SprintController::class, 'activate'])
         ->name('sprints.activate');
+
+    // Kanban Board
+    Route::get('/projects/{project}/board', [KanbanController::class, 'show'])
+        ->name('projects.board');
+
+    Route::patch('/tasks/{task}/move', [KanbanController::class, 'move'])
+        ->name('tasks.move');
 
     // Task Resources
     Route::patch('/tasks/{task}/toggle', [TaskController::class, 'toggleComplete'])

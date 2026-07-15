@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Interfaces;
 
+use App\Enums\TaskStatus;
 use App\Models\Task;
 use Illuminate\Support\Collection;
 
@@ -19,4 +20,7 @@ interface TaskRepositoryInterface
     public function countDueToday(int $userId): int;
     public function search(int $userId, string $query): Collection;
     public function filter(int $userId, array $filters): Collection;
+    public function getByProjectAndSprint(int $projectId, ?int $sprintId): Collection;
+    public function getBacklog(int $projectId): Collection;
+    public function moveTask(Task $task, TaskStatus $status, int $position): Task;
 }

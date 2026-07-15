@@ -121,4 +121,34 @@ class TaskRepository implements TaskRepositoryInterface
 
         return $q->get();
     }
+
+    // === Get tasks for a project filtered by sprint ===
+    public function getByProjectAndSprint(int $projectId, ?int $sprintId): Collection
+    {
+        return Task::with('subtasks')
+            ->where('project_id', $projectId)
+            ->where('sprint_id', $sprintId)
+            ->orderBy('position')
+            ->get();
+    }
+
+    // === Get backlog tasks (no sprint) for a project ===
+    public function getBacklog(int $projectId): Collection
+    {
+        return Task::with('subtasks')
+            ->where('project_id', $projectId)
+            ->whereNull('sprint_id')
+            ->orderBy('position')
+            ->get();
+    }
+
+    // === Move a task to a different status/column and position ===
+    public function moveTask(Task $task, TaskStatus $status, int $position): Task
+    {
+        $task->update([
+            'status' => $status,
+            'position' => $position,
+        ]);
+        return $task->fresh();
+    }
 }

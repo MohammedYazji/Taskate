@@ -19,6 +19,10 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
+                <a href="{{ route('projects.board', $project) }}"
+                    class="text-sm text-gray-500 hover:text-gray-700 border border-gray-200 px-3 py-1.5 rounded-lg transition">
+                    Board
+                </a>
                 <a href="{{ route('projects.sprints.index', $project) }}"
                     class="text-sm text-gray-500 hover:text-gray-700 border border-gray-200 px-3 py-1.5 rounded-lg transition">
                     Sprints

@@ -47,7 +47,7 @@ PROMPT;
             ],
             'generationConfig' => [
                 'temperature' => 0.7,
-                'maxOutputTokens' => 1024,
+                'maxOutputTokens' => 8192,
             ]
         ]);
 
@@ -56,18 +56,28 @@ PROMPT;
         }
 
         $data = $response->json();
-        $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+        $text = '';
+        foreach ($data['candidates'][0]['content']['parts'] ?? [] as $part) {
+            if (isset($part['thought']) && $part['thought']) {
+                continue;
+            }
+            $text .= $part['text'] ?? '';
+        }
 
         $text = trim($text);
         $text = preg_replace('/```json\s*/', '', $text);
         $text = preg_replace('/```\s*/', '', $text);
 
-        $tasks = json_decode($text, true);
+        $result = json_decode($text, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \Exception('Failed to parse Gemini response as JSON: ' . $text);
+            throw new \Exception('Failed to parse Gemini response as JSON: ' . substr($text, 0, 500));
         }
 
-        return $tasks;
+        if (!isset($result['project_name']) || !isset($result['tasks'])) {
+            throw new \Exception('Invalid response structure from Gemini');
+        }
+
+        return $result;
     }
 }

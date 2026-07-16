@@ -1,4 +1,10 @@
 <x-app-layout>
+    @if(session('success'))
+    <div class="mx-6 mt-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
+        {{ session('success') }}
+    </div>
+    @endif
+
     <div x-data="{
         sprintId: {{ $sprintId ?: 'null' }},
         activeSprintId: {{ $activeSprint?->id ?: 'null' }},
@@ -8,7 +14,7 @@
         {{-- Header --}}
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white flex-shrink-0">
             <div class="flex items-center gap-3">
-                <h1 class="text-lg font-semibold text-gray-900">{{ $project->name }}</h1>
+                <h1 class="text-lg font-semibold text-gray-900 truncate max-w-[300px]">{{ $project->name }}</h1>
                 <span class="w-px h-5 bg-gray-200"></span>
                 <form method="GET" action="{{ route('projects.board', $project) }}" id="sprint-switcher">
                     <select name="sprint_id" onchange="this.form.submit()"

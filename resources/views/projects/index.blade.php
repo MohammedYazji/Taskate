@@ -28,7 +28,7 @@
                     <div class="flex items-start justify-between mb-3">
                         <div class="flex items-center gap-2">
                             <span class="w-3.5 h-3.5 rounded-full flex-shrink-0" style="background-color: {{ $project->color }}"></span>
-                            <h3 class="font-semibold text-gray-900 truncate">{{ $project->name }}</h3>
+                            <h3 class="font-semibold text-gray-900 truncate max-w-[200px]">{{ $project->name }}</h3>
                         </div>
                         <span class="text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition">
                             {{ $project->updated_at->diffForHumans() }}

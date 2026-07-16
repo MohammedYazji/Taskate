@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AiTaskController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\KanbanController;
 use App\Http\Controllers\ProfileController;
@@ -68,6 +69,11 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('tasks', TaskController::class)
         ->only(['index', 'store', 'update', 'destroy']);
+
+    // AI Task Generation
+    Route::get('/ai/generate', [AiTaskController::class, 'showForm'])->name('ai.form');
+    Route::post('/ai/generate', [AiTaskController::class, 'generate'])->name('ai.generate');
+    Route::post('/ai/approve', [AiTaskController::class, 'approve'])->name('ai.approve');
 });
 
 require __DIR__.'/auth.php';

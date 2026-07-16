@@ -1,4 +1,10 @@
 <x-app-layout>
+    @if(session('success'))
+    <div class="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
+        {{ session('success') }}
+    </div>
+    @endif
+
     <div x-data="{
         editOpen: false,
         editTask: { id: null, title: '', description: '', priority: 'medium', due_date: '', is_recurring: false, tag_ids: [], project_id: '', subtasks: [], comments: [] },

@@ -12,7 +12,7 @@
             <div class="flex items-center gap-3">
                 <span class="w-4 h-4 rounded-full flex-shrink-0" style="background-color: {{ $project->color }}"></span>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">{{ $project->name }}</h1>
+                    <h1 class="text-2xl font-bold text-gray-900 truncate max-w-[400px]">{{ $project->name }}</h1>
                     @if($project->description)
                     <p class="text-sm text-gray-500 mt-0.5">{{ $project->description }}</p>
                     @endif

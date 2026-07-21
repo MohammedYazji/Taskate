@@ -108,5 +108,17 @@ class TaskController extends Controller
 
         return redirect()->route('dashboard');
     }
+
+    // === Auto-save description ===
+    public function updateDescription(Request $request, Task $task)
+    {
+        $this->authorize('update', $task);
+
+        $task->update([
+            'description' => $request->input('description', ''),
+        ]);
+
+        return response()->json(['success' => true]);
+    }
 }
 

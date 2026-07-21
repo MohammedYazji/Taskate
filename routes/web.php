@@ -67,6 +67,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/tasks/{task}/toggle', [TaskController::class, 'toggleComplete'])
         ->name('tasks.toggle');
 
+    Route::patch('/tasks/{task}/description', [TaskController::class, 'updateDescription'])
+        ->name('tasks.description');
+
     Route::resource('tasks', TaskController::class)
         ->only(['index', 'store', 'update', 'destroy']);
 

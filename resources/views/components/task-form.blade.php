@@ -1,4 +1,4 @@
-@props(['task' => null, 'alpine' => false, 'defaultDate' => null])
+@props(['task' => null, 'alpine' => false, 'defaultDate' => null, 'tags' => [], 'projects' => []])
 
 <form
     @if(!$alpine)

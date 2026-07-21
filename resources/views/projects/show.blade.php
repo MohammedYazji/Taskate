@@ -41,9 +41,20 @@
         {{-- Task List --}}
         <div class="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
             @forelse($tasks as $task)
-            <div class="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition group">
+            <div class="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition group cursor-pointer"
+                 @click="
+                    editTask = {
+                        id: {{ $task->id }},
+                        title: {{ json_encode($task->title) }},
+                        description: {{ json_encode($task->description) }},
+                        priority: {{ json_encode($task->priority->value) }},
+                        due_date: {{ json_encode($task->due_date ? $task->due_date->format('Y-m-d') : '') }},
+                        is_recurring: {{ $task->is_recurring ? 'true' : 'false' }},
+                        tag_ids: {{ json_encode($task->tags->pluck('id')->toArray()) }}
+                    };
+                    editOpen = true">
 
-                <form method="POST" action="{{ route('tasks.toggle', $task) }}" class="inline">
+                <form method="POST" action="{{ route('tasks.toggle', $task) }}" class="inline" @click.stop>
                     @csrf @method('PATCH')
                     <button type="submit"
                         class="w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center cursor-pointer transition
@@ -137,16 +148,111 @@
                 x-transition:leave-start="translate-x-0"
                 x-transition:leave-end="translate-x-full">
 
-                <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-lg font-semibold text-gray-900">Edit Task</h2>
-                    <button @click="editOpen = false" class="text-gray-400 hover:text-gray-600 transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                <div class="flex items-center gap-3 px-6 py-3 border-b border-gray-200 flex-shrink-0">
+                    <button @click="
+                        editTask.status = editTask.status === 'done' ? 'todo' : 'done';
+                        fetch('/tasks/' + editTask.id, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' },
+                            body: JSON.stringify({ status: editTask.status }),
+                        })
+                    " class="w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center transition"
+                        :class="editTask.status === 'done' ? 'bg-violet-600 border-violet-600' : 'border-gray-300 hover:border-violet-400'">
+                        <svg x-show="editTask.status === 'done'" class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                         </svg>
                     </button>
+                    <div class="w-px h-4 bg-gray-200"></div>
+                    <div class="flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <x-date-picker />
+                    </div>
+                    <div class="flex-1"></div>
+                    <div class="relative" x-data="{ flagOpen: false }" @click.outside="flagOpen = false">
+                        <button @click="flagOpen = !flagOpen" class="p-1.5 rounded-lg transition hover:bg-gray-50">
+                            <svg class="w-4 h-4" :class="{
+                                'text-green-500': editTask.priority === 'low',
+                                'text-yellow-500': editTask.priority === 'medium',
+                                'text-red-500': editTask.priority === 'high',
+                                'text-gray-300': !editTask.priority
+                            }" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                        </button>
+                        <div x-show="flagOpen" x-cloak
+                            x-transition:enter="transition ease-out duration-150"
+                            x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-100"
+                            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
+                            class="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1 w-32">
+                            <button @click="editTask.priority = 'low'; flagOpen = false; fetch('/tasks/' + editTask.id, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' }, body: JSON.stringify({ priority: 'low' }) })"
+                                class="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 transition"
+                                :class="editTask.priority === 'low' ? 'bg-green-50 text-green-600 font-semibold' : 'text-gray-600'">
+                                <svg class="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="currentColor"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15" stroke="currentColor" stroke-width="2"/></svg>
+                                Low
+                            </button>
+                            <button @click="editTask.priority = 'medium'; flagOpen = false; fetch('/tasks/' + editTask.id, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' }, body: JSON.stringify({ priority: 'medium' }) })"
+                                class="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 transition"
+                                :class="editTask.priority === 'medium' ? 'bg-yellow-50 text-yellow-600 font-semibold' : 'text-gray-600'">
+                                <svg class="w-4 h-4 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15" stroke="currentColor" stroke-width="2"/></svg>
+                                Medium
+                            </button>
+                            <button @click="editTask.priority = 'high'; flagOpen = false; fetch('/tasks/' + editTask.id, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' }, body: JSON.stringify({ priority: 'high' }) })"
+                                class="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 transition"
+                                :class="editTask.priority === 'high' ? 'bg-red-50 text-red-600 font-semibold' : 'text-gray-600'">
+                                <svg class="w-4 h-4 text-red-500" viewBox="0 0 24 24" fill="currentColor"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15" stroke="currentColor" stroke-width="2"/></svg>
+                                High
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <x-task-form alpine :tags="$tags" :projects="[$project]" x-bind:action="`/tasks/${editTask.id}`" />
+
+                {{-- Description editor --}}
+                <div class="px-6 py-4 border-t border-gray-200"
+                     x-data="{
+                         html: '',
+                         editor: null,
+                         saveTimer: null,
+                         save() {
+                             clearTimeout(this.saveTimer)
+                             this.saveTimer = setTimeout(() => {
+                                 fetch('/tasks/' + editTask.id + '/description', {
+                                     method: 'PATCH',
+                                     headers: {
+                                         'Content-Type': 'application/json',
+                                         'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                         'X-Requested-With': 'XMLHttpRequest',
+                                     },
+                                     body: JSON.stringify({ description: this.html }),
+                                 })
+                             }, 500)
+                         }
+                     }"
+                     x-effect="if (editOpen && editTask.id) {
+                         html = editTask.description || '';
+                         if (editor && editor.getHTML() !== html) {
+                             editor.commands.setContent(html, false);
+                         }
+                     }"
+                     x-init="$watch('editOpen', (open) => {
+                         if (open && editTask.id && !editor) {
+                             $nextTick(() => {
+                                 editor = initTaskEditor($refs.descEditor, {
+                                     content: editTask.description || '',
+                                     placeholder: 'Start writing...',
+                                     onUpdate: (val) => { html = val; this.save() },
+                                 })
+                             })
+                         }
+                     })">
+                    <div x-ref="descEditor" class="task-editor-area min-h-[200px] text-sm leading-relaxed text-gray-800 outline-none"></div>
+                </div>
             </div>
 
         {{-- New Task Panel --}}

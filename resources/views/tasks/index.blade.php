@@ -174,7 +174,7 @@
                 </button>
             </div>
 
-            <x-task-form :tags="$tags" :projects="$projects" />
+            <x-task-form :tags="$tags" :projects="$projects" :defaultDate="request('date')" />
         </div>
 
     </div>

@@ -1,4 +1,5 @@
 import Alpine from 'alpinejs';
+import './task-editor';
 
 window.Alpine = Alpine;
 

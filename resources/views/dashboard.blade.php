@@ -27,6 +27,15 @@
             this.editTask = JSON.parse(JSON.stringify(task));
             this.editOpen = true;
         },
+        init() {
+            const params = new URLSearchParams(window.location.search);
+            const editId = params.get('edit');
+            if (editId) {
+                const task = this.tasks.find(t => t.id == editId);
+                if (task) this.openEdit(task);
+                history.replaceState(null, '', window.location.pathname);
+            }
+        },
         toggleTaskStatus(task) {
             task.status = task.status === 'done' ? 'todo' : 'done';
             fetch('/tasks/' + task.id + '/toggle', {

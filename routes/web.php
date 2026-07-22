@@ -4,6 +4,7 @@ use App\Http\Controllers\AiTaskController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\KanbanController;
+use App\Http\Controllers\PomodoroController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SearchController;
@@ -30,6 +31,11 @@ Route::middleware('auth')->group(function () {
 
     // Calendar
     Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar');
+
+    // Pomodoro Timer
+    Route::get('/pomodoro', [PomodoroController::class, 'index'])->name('pomodoro.index');
+    Route::post('/pomodoro/sessions', [PomodoroController::class, 'store'])->name('pomodoro.sessions.store');
+    Route::get('/pomodoro/stats', [PomodoroController::class, 'stats'])->name('pomodoro.stats');
 
     // Subtask Routes
     Route::post('/tasks/{task}/subtasks', [SubtaskController::class, 'store'])->name('subtasks.store');

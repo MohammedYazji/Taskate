@@ -253,6 +253,17 @@
                      })">
                     <div x-ref="descEditor" class="task-editor-area min-h-[200px] text-sm leading-relaxed text-gray-800 outline-none"></div>
                 </div>
+
+                {{-- Start Focus --}}
+                <div class="px-6 py-3 border-t border-gray-200">
+                    <a :href="'/pomodoro?task_id=' + editTask.id"
+                        class="flex items-center gap-2 text-sm text-violet-600 hover:text-violet-700 font-medium transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Start Focus Session
+                    </a>
+                </div>
             </div>
 
         {{-- New Task Panel --}}

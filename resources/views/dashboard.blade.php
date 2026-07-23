@@ -165,7 +165,7 @@
                             {{-- Checkbox --}}
                             <button @click.stop="toggleTaskStatus(task)"
                                 class="w-[18px] h-[18px] rounded-[5px] border-[1.5px] flex-shrink-0 flex items-center justify-center cursor-pointer transition"
-                                :class="task.status === 'done' ? 'bg-violet-600 border-violet-600' : 'border-gray-300 hover:border-violet-400'">
+                                :class="task.status === 'done' ? 'bg-brand-500 border-brand-500' : 'border-gray-300 hover:border-brand-400'">
                                 <svg x-show="task.status === 'done'" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                                 </svg>
@@ -243,7 +243,7 @@
                         <div class="flex items-center justify-center">
                             <a href="{{ route('tasks.index', ['date' => $dayDate]) }}"
                                 class="w-7 h-7 flex items-center justify-center text-xs rounded-full
-                                {{ $day === now()->day ? 'bg-violet-600 text-white font-semibold' : 'text-gray-600 hover:bg-gray-100' }}">
+                                {{ $day === now()->day ? 'bg-brand-500 text-white font-semibold' : 'text-gray-600 hover:bg-gray-100' }}">
                                 {{ $day }}
                             </a>
                         </div>
@@ -257,7 +257,7 @@
                 <div class="space-y-2">
                     @forelse($tasks->whereNotNull('due_date')->where('due_date', '>=', now()->toDateString())->sortBy('due_date')->take(4) as $task)
                     <div class="flex items-start gap-2">
-                        <div class="w-1 h-8 rounded-full bg-violet-500 flex-shrink-0 mt-0.5"></div>
+                        <div class="w-1 h-8 rounded-full bg-brand-500 flex-shrink-0 mt-0.5"></div>
                         <div>
                             <p class="text-xs font-medium text-gray-800">{{ $task->title }}</p>
                             <p class="text-xs text-gray-400">{{ $task->due_date->format('M j') }}</p>
@@ -303,7 +303,7 @@
                     });
                     syncTask();
                 " class="w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center transition"
-                    :class="editTask.status === 'done' ? 'bg-violet-600 border-violet-600' : 'border-gray-300 hover:border-violet-400'">
+                    :class="editTask.status === 'done' ? 'bg-brand-500 border-brand-500' : 'border-gray-300 hover:border-brand-400'">
                     <svg x-show="editTask.status === 'done'" class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                     </svg>
@@ -411,7 +411,7 @@
                     <div class="space-y-3 mb-3">
                         <template x-for="comment in editTask.comments" :key="comment.id">
                             <div class="flex gap-2">
-                                <div class="w-6 h-6 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center text-xs font-semibold flex-shrink-0 mt-0.5"
+                                <div class="w-6 h-6 rounded-full bg-brand-50 text-brand-500 flex items-center justify-center text-xs font-semibold flex-shrink-0 mt-0.5"
                                     x-text="comment.user_name.charAt(0).toUpperCase()">
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -429,10 +429,10 @@
                     <form method="POST" x-bind:action="`/tasks/${editTask.id}/comments`" class="flex gap-2">
                         @csrf
                         <textarea name="body" required maxlength="1000" placeholder="Write a comment..."
-                            class="flex-1 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none"
+                            class="flex-1 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
                             rows="2"></textarea>
                         <button type="submit"
-                            class="bg-violet-600 hover:bg-violet-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition self-end">
+                            class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition self-end">
                             Send
                         </button>
                     </form>
@@ -444,7 +444,7 @@
                 {{-- Comments icon --}}
                 <button @click="commentsOpen = !commentsOpen"
                     class="p-2 rounded-lg transition"
-                    :class="commentsOpen ? 'bg-violet-50 text-violet-600' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'">
+                    :class="commentsOpen ? 'bg-brand-50 text-brand-500' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                     </svg>
@@ -454,7 +454,7 @@
                 <div class="relative">
                     <button @click="menuOpen = !menuOpen"
                         class="p-2 rounded-lg transition"
-                        :class="menuOpen ? 'bg-violet-50 text-violet-600' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'">
+                        :class="menuOpen ? 'bg-brand-50 text-brand-500' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                             <circle cx="12" cy="5" r="1.5"/>
                             <circle cx="12" cy="12" r="1.5"/>
@@ -498,7 +498,7 @@
                                                 })
                                             }, 500)
                                         "
-                                        class="rounded border-gray-300 text-violet-600">
+                                        class="rounded border-gray-300 text-brand-500">
                                     <span class="text-xs px-2 py-0.5 rounded-full text-white"
                                         style="background-color: {{ $tag->color }}">
                                         {{ $tag->name }}
@@ -527,7 +527,7 @@
                                             @csrf @method('PATCH')
                                             <button type="submit"
                                                 class="w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition"
-                                                x-bind:class="subtask.is_completed ? 'bg-violet-600 border-violet-600' : 'border-gray-300 hover:border-violet-400'">
+                                                x-bind:class="subtask.is_completed ? 'bg-brand-500 border-brand-500' : 'border-gray-300 hover:border-brand-400'">
                                                 <svg x-show="subtask.is_completed" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                                                 </svg>
@@ -551,9 +551,9 @@
                             <form method="POST" x-bind:action="`/tasks/${editTask.id}/subtasks`" class="flex gap-2" @click.stop>
                                 @csrf
                                 <input type="text" name="title" required maxlength="255" placeholder="Add subtask..."
-                                    class="flex-1 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent">
+                                    class="flex-1 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
                                 <button type="submit"
-                                    class="bg-violet-600 hover:bg-violet-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition whitespace-nowrap">
+                                    class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition whitespace-nowrap">
                                     Add
                                 </button>
                             </form>
@@ -562,7 +562,7 @@
                         {{-- Start Focus --}}
                         <div class="p-3 border-t border-gray-100">
                             <a :href="'/pomodoro?task_id=' + editTask.id"
-                                class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-violet-600 hover:bg-violet-50 transition"
+                                class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-brand-500 hover:bg-brand-50 transition"
                                 @click.stop>
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -603,11 +603,11 @@
                 </div>
                 <div class="flex items-center justify-center">
                     <input type="date" x-model="newDate"
-                        class="w-full text-center text-xs font-medium border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-violet-500 text-gray-700">
+                        class="w-full text-center text-xs font-medium border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-brand-500 text-gray-700">
                 </div>
                 <div class="flex items-center justify-center">
                     <select x-model="newPriority"
-                        class="w-full text-center text-xs font-medium border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-violet-500 text-gray-700">
+                        class="w-full text-center text-xs font-medium border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-brand-500 text-gray-700">
                         <option value="low">Low</option>
                         <option value="medium">Medium</option>
                         <option value="high">High</option>

@@ -8,7 +8,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('scripts')
 </head>
-<body class="bg-gray-50 h-screen flex overflow-hidden">
+<body class="bg-brand-950 h-screen flex overflow-hidden">
 
     <x-sidebar />
 

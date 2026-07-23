@@ -4,7 +4,7 @@
         <div class="flex items-center justify-between mb-6">
             <h1 class="text-2xl font-bold text-gray-900">Projects</h1>
             <button @click="open = true"
-                class="bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition flex items-center gap-2">
+                class="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition flex items-center gap-2">
                 <span class="text-lg leading-none">+</span> New Project
             </button>
         </div>
@@ -45,7 +45,7 @@
                             <span>{{ $project->tasks_count > 0 ? round(($project->completed_tasks_count / $project->tasks_count) * 100) : 0 }}%</span>
                         </div>
                         <div class="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                            <div class="h-full bg-violet-600 rounded-full transition-all"
+                            <div class="h-full bg-brand-500 rounded-full transition-all"
                                 style="width: {{ $project->tasks_count > 0 ? ($project->completed_tasks_count / $project->tasks_count * 100) : 0 }}%">
                             </div>
                         </div>

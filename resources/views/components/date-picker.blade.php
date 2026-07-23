@@ -132,7 +132,7 @@
     class="relative inline-block">
 
     <button @click="open = !open"
-        class="w-full text-center text-xs font-medium border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-violet-500 text-gray-700 hover:border-violet-400 transition">
+        class="w-full text-center text-xs font-medium border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-brand-500 text-gray-700 hover:border-brand-400 transition">
         <span x-text="formattedDisplay || 'Set date'"></span>
     </button>
 
@@ -150,12 +150,12 @@
         <div class="flex border-b border-gray-100">
             <button @click="tab = 'date'"
                 class="flex-1 py-2.5 text-xs font-semibold transition"
-                :class="tab === 'date' ? 'text-violet-600 border-b-2 border-violet-600' : 'text-gray-400 hover:text-gray-600'">
+                :class="tab === 'date' ? 'text-brand-500 border-b-2 border-brand-500' : 'text-gray-400 hover:text-gray-600'">
                 Date
             </button>
             <button @click="tab = 'duration'"
                 class="flex-1 py-2.5 text-xs font-semibold transition"
-                :class="tab === 'duration' ? 'text-violet-600 border-b-2 border-violet-600' : 'text-gray-400 hover:text-gray-600'">
+                :class="tab === 'duration' ? 'text-brand-500 border-b-2 border-brand-500' : 'text-gray-400 hover:text-gray-600'">
                 Duration
             </button>
         </div>
@@ -166,19 +166,19 @@
             {{-- Section 1: Quick picks --}}
             <div class="grid grid-cols-4 gap-1.5">
                 <button @click="setToday()"
-                    class="px-2 py-1.5 text-[11px] font-medium rounded-lg border border-gray-200 hover:border-violet-400 hover:bg-violet-50 transition text-gray-600">
+                    class="px-2 py-1.5 text-[11px] font-medium rounded-lg border border-gray-200 hover:border-brand-400 hover:bg-brand-50 transition text-gray-600">
                     Today
                 </button>
                 <button @click="setTomorrow()"
-                    class="px-2 py-1.5 text-[11px] font-medium rounded-lg border border-gray-200 hover:border-violet-400 hover:bg-violet-50 transition text-gray-600">
+                    class="px-2 py-1.5 text-[11px] font-medium rounded-lg border border-gray-200 hover:border-brand-400 hover:bg-brand-50 transition text-gray-600">
                     Tomorrow
                 </button>
                 <button @click="setNextWeek()"
-                    class="px-2 py-1.5 text-[11px] font-medium rounded-lg border border-gray-200 hover:border-violet-400 hover:bg-violet-50 transition text-gray-600">
+                    class="px-2 py-1.5 text-[11px] font-medium rounded-lg border border-gray-200 hover:border-brand-400 hover:bg-brand-50 transition text-gray-600">
                     Next Week
                 </button>
                 <button @click="setNextMonth()"
-                    class="px-2 py-1.5 text-[11px] font-medium rounded-lg border border-gray-200 hover:border-violet-400 hover:bg-violet-50 transition text-gray-600">
+                    class="px-2 py-1.5 text-[11px] font-medium rounded-lg border border-gray-200 hover:border-brand-400 hover:bg-brand-50 transition text-gray-600">
                     Next Month
                 </button>
             </div>
@@ -202,8 +202,8 @@
                         <button @click="pickDay(day)"
                             class="w-8 h-8 mx-auto text-xs rounded-full flex items-center justify-center transition"
                             :class="{
-                                'bg-violet-600 text-white font-semibold': day && isSelected(day),
-                                'bg-violet-100 text-violet-700 font-semibold': day && isToday(day) && !isSelected(day),
+                                'bg-brand-500 text-white font-semibold': day && isSelected(day),
+                                'bg-brand-50 text-brand-600 font-semibold': day && isToday(day) && !isSelected(day),
                                 'text-gray-700 hover:bg-gray-100': day && !isSelected(day) && !isToday(day),
                                 'text-transparent cursor-default': !day
                             }"
@@ -215,19 +215,19 @@
             {{-- Section 3: Time --}}
             <div class="relative">
                 <button @click="$refs.timeDrop.classList.toggle('hidden')"
-                    class="w-full flex items-center justify-between px-3 py-2 text-xs font-medium border border-gray-200 rounded-lg hover:border-violet-400 transition text-gray-700">
+                    class="w-full flex items-center justify-between px-3 py-2 text-xs font-medium border border-gray-200 rounded-lg hover:border-brand-400 transition text-gray-700">
                     <span x-text="selectedTime || 'Select time'"></span>
                     <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
                 <div x-ref="timeDrop" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-40 overflow-y-auto">
                     <button @click="selectedTime = null; $refs.timeDrop.classList.add('hidden')"
-                        class="w-full px-3 py-1.5 text-xs text-left hover:bg-violet-50 transition text-gray-500">
+                        class="w-full px-3 py-1.5 text-xs text-left hover:bg-brand-50 transition text-gray-500">
                         No time
                     </button>
                     <template x-for="t in timeOptions" :key="t">
                         <button @click="selectedTime = t; $refs.timeDrop.classList.add('hidden')"
-                            class="w-full px-3 py-1.5 text-xs text-left hover:bg-violet-50 transition"
-                            :class="selectedTime === t ? 'bg-violet-50 text-violet-600 font-semibold' : 'text-gray-700'"
+                            class="w-full px-3 py-1.5 text-xs text-left hover:bg-brand-50 transition"
+                            :class="selectedTime === t ? 'bg-brand-50 text-brand-500 font-semibold' : 'text-gray-700'"
                             x-text="t"></button>
                     </template>
                 </div>
@@ -239,27 +239,27 @@
                 <div class="grid grid-cols-5 gap-1">
                     <button @click="reminder = 'on-time'"
                         class="px-1 py-1 text-[10px] font-medium rounded-lg border transition"
-                        :class="reminder === 'on-time' ? 'bg-violet-600 border-violet-600 text-white' : 'border-gray-200 text-gray-600 hover:border-violet-400'">
+                        :class="reminder === 'on-time' ? 'bg-brand-500 border-brand-500 text-white' : 'border-gray-200 text-gray-600 hover:border-brand-400'">
                         On time
                     </button>
                     <button @click="reminder = '5m'"
                         class="px-1 py-1 text-[10px] font-medium rounded-lg border transition"
-                        :class="reminder === '5m' ? 'bg-violet-600 border-violet-600 text-white' : 'border-gray-200 text-gray-600 hover:border-violet-400'">
+                        :class="reminder === '5m' ? 'bg-brand-500 border-brand-500 text-white' : 'border-gray-200 text-gray-600 hover:border-brand-400'">
                         5 min
                     </button>
                     <button @click="reminder = '30m'"
                         class="px-1 py-1 text-[10px] font-medium rounded-lg border transition"
-                        :class="reminder === '30m' ? 'bg-violet-600 border-violet-600 text-white' : 'border-gray-200 text-gray-600 hover:border-violet-400'">
+                        :class="reminder === '30m' ? 'bg-brand-500 border-brand-500 text-white' : 'border-gray-200 text-gray-600 hover:border-brand-400'">
                         30 min
                     </button>
                     <button @click="reminder = '1h'"
                         class="px-1 py-1 text-[10px] font-medium rounded-lg border transition"
-                        :class="reminder === '1h' ? 'bg-violet-600 border-violet-600 text-white' : 'border-gray-200 text-gray-600 hover:border-violet-400'">
+                        :class="reminder === '1h' ? 'bg-brand-500 border-brand-500 text-white' : 'border-gray-200 text-gray-600 hover:border-brand-400'">
                         1 hour
                     </button>
                     <button @click="reminder = '1d'"
                         class="px-1 py-1 text-[10px] font-medium rounded-lg border transition"
-                        :class="reminder === '1d' ? 'bg-violet-600 border-violet-600 text-white' : 'border-gray-200 text-gray-600 hover:border-violet-400'">
+                        :class="reminder === '1d' ? 'bg-brand-500 border-brand-500 text-white' : 'border-gray-200 text-gray-600 hover:border-brand-400'">
                         1 day
                     </button>
                 </div>
@@ -272,7 +272,7 @@
                     <template x-for="r in ['daily','weekly','monthly','yearly','every-week']" :key="r">
                         <button @click="repeat = (repeat === r ? 'none' : r)"
                             class="px-2 py-1 text-[10px] font-medium rounded-lg border transition capitalize"
-                            :class="repeat === r ? 'bg-violet-600 border-violet-600 text-white' : 'border-gray-200 text-gray-600 hover:border-violet-400'"
+                            :class="repeat === r ? 'bg-brand-500 border-brand-500 text-white' : 'border-gray-200 text-gray-600 hover:border-brand-400'"
                             x-text="r.replace('-', ' ')"></button>
                     </template>
                 </div>
@@ -286,19 +286,19 @@
             <div class="flex items-center gap-1.5">
                 <span class="text-[11px] font-semibold text-gray-400 w-10 flex-shrink-0">Start</span>
                 <input type="date" x-model="durationStart"
-                    class="flex-1 text-xs font-medium border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-violet-500 text-gray-700">
+                    class="flex-1 text-xs font-medium border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-brand-500 text-gray-700">
                 <div class="relative" x-show="!allDay">
                     <button @click="$refs.durStartTimeDrop.classList.toggle('hidden')"
-                        class="w-[72px] text-xs font-medium border border-gray-200 rounded-lg px-2 py-1.5 outline-none text-gray-700 hover:border-violet-400 transition text-center">
+                        class="w-[72px] text-xs font-medium border border-gray-200 rounded-lg px-2 py-1.5 outline-none text-gray-700 hover:border-brand-400 transition text-center">
                         <span x-text="durationStartTime || '--:--'"></span>
                     </button>
                     <div x-ref="durStartTimeDrop" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-36 overflow-y-auto">
                         <button @click="durationStartTime = null; $refs.durStartTimeDrop.classList.add('hidden')"
-                            class="w-full px-3 py-1.5 text-xs text-left hover:bg-violet-50 transition text-gray-500">No time</button>
+                            class="w-full px-3 py-1.5 text-xs text-left hover:bg-brand-50 transition text-gray-500">No time</button>
                         <template x-for="t in timeOptions" :key="'s'+t">
                             <button @click="durationStartTime = t; $refs.durStartTimeDrop.classList.add('hidden')"
-                                class="w-full px-3 py-1.5 text-xs text-left hover:bg-violet-50 transition"
-                                :class="durationStartTime === t ? 'bg-violet-50 text-violet-600 font-semibold' : 'text-gray-700'"
+                                class="w-full px-3 py-1.5 text-xs text-left hover:bg-brand-50 transition"
+                                :class="durationStartTime === t ? 'bg-brand-50 text-brand-500 font-semibold' : 'text-gray-700'"
                                 x-text="t"></button>
                         </template>
                     </div>
@@ -309,19 +309,19 @@
             <div class="flex items-center gap-1.5">
                 <span class="text-[11px] font-semibold text-gray-400 w-10 flex-shrink-0">End</span>
                 <input type="date" x-model="durationEnd"
-                    class="flex-1 text-xs font-medium border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-violet-500 text-gray-700">
+                    class="flex-1 text-xs font-medium border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-brand-500 text-gray-700">
                 <div class="relative" x-show="!allDay">
                     <button @click="$refs.durEndTimeDrop.classList.toggle('hidden')"
-                        class="w-[72px] text-xs font-medium border border-gray-200 rounded-lg px-2 py-1.5 outline-none text-gray-700 hover:border-violet-400 transition text-center">
+                        class="w-[72px] text-xs font-medium border border-gray-200 rounded-lg px-2 py-1.5 outline-none text-gray-700 hover:border-brand-400 transition text-center">
                         <span x-text="durationEndTime || '--:--'"></span>
                     </button>
                     <div x-ref="durEndTimeDrop" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-36 overflow-y-auto">
                         <button @click="durationEndTime = null; $refs.durEndTimeDrop.classList.add('hidden')"
-                            class="w-full px-3 py-1.5 text-xs text-left hover:bg-violet-50 transition text-gray-500">No time</button>
+                            class="w-full px-3 py-1.5 text-xs text-left hover:bg-brand-50 transition text-gray-500">No time</button>
                         <template x-for="t in timeOptions" :key="'e'+t">
                             <button @click="durationEndTime = t; $refs.durEndTimeDrop.classList.add('hidden')"
-                                class="w-full px-3 py-1.5 text-xs text-left hover:bg-violet-50 transition"
-                                :class="durationEndTime === t ? 'bg-violet-50 text-violet-600 font-semibold' : 'text-gray-700'"
+                                class="w-full px-3 py-1.5 text-xs text-left hover:bg-brand-50 transition"
+                                :class="durationEndTime === t ? 'bg-brand-50 text-brand-500 font-semibold' : 'text-gray-700'"
                                 x-text="t"></button>
                         </template>
                     </div>
@@ -333,7 +333,7 @@
                 <span class="text-xs font-medium text-gray-600">All Day</span>
                 <button @click="allDay = !allDay"
                     class="relative w-9 h-5 rounded-full transition-colors"
-                    :class="allDay ? 'bg-violet-600' : 'bg-gray-200'">
+                    :class="allDay ? 'bg-brand-500' : 'bg-gray-200'">
                     <span class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform"
                         :class="allDay ? 'translate-x-4' : 'translate-x-0'"></span>
                 </button>
@@ -345,27 +345,27 @@
                 <div class="grid grid-cols-5 gap-1">
                     <button @click="reminder = 'on-time'"
                         class="px-1 py-1 text-[10px] font-medium rounded-lg border transition"
-                        :class="reminder === 'on-time' ? 'bg-violet-600 border-violet-600 text-white' : 'border-gray-200 text-gray-600 hover:border-violet-400'">
+                        :class="reminder === 'on-time' ? 'bg-brand-500 border-brand-500 text-white' : 'border-gray-200 text-gray-600 hover:border-brand-400'">
                         On time
                     </button>
                     <button @click="reminder = '5m'"
                         class="px-1 py-1 text-[10px] font-medium rounded-lg border transition"
-                        :class="reminder === '5m' ? 'bg-violet-600 border-violet-600 text-white' : 'border-gray-200 text-gray-600 hover:border-violet-400'">
+                        :class="reminder === '5m' ? 'bg-brand-500 border-brand-500 text-white' : 'border-gray-200 text-gray-600 hover:border-brand-400'">
                         5 min
                     </button>
                     <button @click="reminder = '30m'"
                         class="px-1 py-1 text-[10px] font-medium rounded-lg border transition"
-                        :class="reminder === '30m' ? 'bg-violet-600 border-violet-600 text-white' : 'border-gray-200 text-gray-600 hover:border-violet-400'">
+                        :class="reminder === '30m' ? 'bg-brand-500 border-brand-500 text-white' : 'border-gray-200 text-gray-600 hover:border-brand-400'">
                         30 min
                     </button>
                     <button @click="reminder = '1h'"
                         class="px-1 py-1 text-[10px] font-medium rounded-lg border transition"
-                        :class="reminder === '1h' ? 'bg-violet-600 border-violet-600 text-white' : 'border-gray-200 text-gray-600 hover:border-violet-400'">
+                        :class="reminder === '1h' ? 'bg-brand-500 border-brand-500 text-white' : 'border-gray-200 text-gray-600 hover:border-brand-400'">
                         1 hour
                     </button>
                     <button @click="reminder = '1d'"
                         class="px-1 py-1 text-[10px] font-medium rounded-lg border transition"
-                        :class="reminder === '1d' ? 'bg-violet-600 border-violet-600 text-white' : 'border-gray-200 text-gray-600 hover:border-violet-400'">
+                        :class="reminder === '1d' ? 'bg-brand-500 border-brand-500 text-white' : 'border-gray-200 text-gray-600 hover:border-brand-400'">
                         1 day
                     </button>
                 </div>
@@ -378,7 +378,7 @@
                     <template x-for="r in ['daily','weekly','monthly','yearly','every-week']" :key="r">
                         <button @click="repeat = (repeat === r ? 'none' : r)"
                             class="px-2 py-1 text-[10px] font-medium rounded-lg border transition capitalize"
-                            :class="repeat === r ? 'bg-violet-600 border-violet-600 text-white' : 'border-gray-200 text-gray-600 hover:border-violet-400'"
+                            :class="repeat === r ? 'bg-brand-500 border-brand-500 text-white' : 'border-gray-200 text-gray-600 hover:border-brand-400'"
                             x-text="r.replace('-', ' ')"></button>
                     </template>
                 </div>
@@ -392,7 +392,7 @@
                 Clear
             </button>
             <button @click="ok()"
-                class="px-4 py-1.5 text-xs font-medium text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition">
+                class="px-4 py-1.5 text-xs font-medium text-white bg-brand-500 hover:bg-brand-600 rounded-lg transition">
                 OK
             </button>
         </div>

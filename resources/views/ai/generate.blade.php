@@ -17,7 +17,7 @@
                         required
                         minlength="5"
                         maxlength="500"
-                        class="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none"
+                        class="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
                         placeholder="e.g., Build a REST API for an e-commerce platform with user authentication, product management, and order processing...">{{ old('topic') }}
                     </textarea>
                     @error('topic')
@@ -26,7 +26,7 @@
                 </div>
 
                 <button type="submit"
-                    class="w-full bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium py-3 rounded-lg transition flex items-center justify-center gap-2">
+                    class="w-full bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium py-3 rounded-lg transition flex items-center justify-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>

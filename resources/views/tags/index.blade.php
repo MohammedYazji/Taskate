@@ -12,7 +12,7 @@
                 <label class="block text-xs font-medium text-gray-500 mb-1">Name</label>
                 <input type="text" name="name" required maxlength="50"
                     placeholder="e.g. Design"
-                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent">
+                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
                 @error('name')
                     <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                 @enderror
@@ -26,14 +26,14 @@
                     <input type="text" id="tag-color" name="color" value="#7C3AED" maxlength="7"
                         pattern="^#[0-9A-Fa-f]{6}$"
                         oninput="this.previousElementSibling.value = this.value"
-                        class="w-22 border border-gray-200 rounded-lg px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent font-mono">
+                        class="w-22 border border-gray-200 rounded-lg px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent font-mono">
                 </div>
                 @error('color')
                     <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                 @enderror
             </div>
             <button type="submit"
-                class="bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition whitespace-nowrap">
+                class="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition whitespace-nowrap">
                 Add Tag
             </button>
         </form>

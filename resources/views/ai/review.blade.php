@@ -18,14 +18,14 @@
             <div class="bg-white rounded-xl border border-gray-200 p-5 mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
                 <input type="text" name="project_name" required value="{{ $projectName }}"
-                    class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                    class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                     placeholder="Enter project name...">
                 <p class="text-xs text-gray-400 mt-1">All approved tasks will be added to this project</p>
             </div>
 
             <div class="space-y-4 mb-6">
                 @foreach($tasks as $index => $task)
-                <div class="bg-white rounded-xl border border-gray-200 hover:border-violet-200 transition"
+                <div class="bg-white rounded-xl border border-gray-200 hover:border-brand-400/30 transition"
                      x-data="{ editing: false }">
 
                     {{-- View Mode --}}
@@ -35,7 +35,7 @@
                                 name="tasks[{{ $index }}][approved]"
                                 value="1"
                                 checked
-                                class="mt-1 w-5 h-5 rounded border-gray-300 text-violet-600 focus:ring-violet-500">
+                                class="mt-1 w-5 h-5 rounded border-gray-300 text-brand-500 focus:ring-brand-500">
 
                             <div class="flex-1 min-w-0">
                                 <input type="hidden" name="tasks[{{ $index }}][title]" :value="$el.closest('[x-data]').querySelector('input[name=title]').value || '{{ $task['title'] }}'">
@@ -64,7 +64,7 @@
                             </div>
 
                             <button type="button" @click="editing = true"
-                                class="p-1.5 text-gray-300 hover:text-violet-500 hover:bg-violet-50 rounded-lg transition"
+                                class="p-1.5 text-gray-300 hover:text-brand-500 hover:bg-brand-50 rounded-lg transition"
                                 title="Edit">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -76,7 +76,7 @@
                     {{-- Edit Mode --}}
                     <div x-show="editing" x-cloak class="p-5 space-y-4">
                         <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-medium text-violet-600">Editing Task</span>
+                            <span class="text-xs font-medium text-brand-500">Editing Task</span>
                             <button type="button" @click="editing = false"
                                 class="text-xs text-gray-400 hover:text-gray-600 transition">
                                 Done
@@ -86,19 +86,19 @@
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Title</label>
                             <input type="text" name="title" value="{{ $task['title'] }}" required
-                                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent">
+                                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
                         </div>
 
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
                             <textarea name="description" rows="2"
-                                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none">{{ $task['description'] ?? '' }}</textarea>
+                                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none">{{ $task['description'] ?? '' }}</textarea>
                         </div>
 
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Priority</label>
                             <select name="priority"
-                                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
                                 <option value="low" {{ $task['priority'] === 'low' ? 'selected' : '' }}>Low</option>
                                 <option value="medium" {{ $task['priority'] === 'medium' ? 'selected' : '' }}>Medium</option>
                                 <option value="high" {{ $task['priority'] === 'high' ? 'selected' : '' }}>High</option>
@@ -111,7 +111,7 @@
 
             <div class="flex items-center gap-4">
                 <button type="submit"
-                    class="flex-1 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium py-3 rounded-lg transition flex items-center justify-center gap-2">
+                    class="flex-1 bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium py-3 rounded-lg transition flex items-center justify-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>

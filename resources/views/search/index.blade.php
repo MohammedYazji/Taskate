@@ -15,8 +15,8 @@
                     <button type="submit"
                         class="w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center cursor-pointer transition
                         {{ $task->status === \App\Enums\TaskStatus::Done
-                            ? 'bg-violet-600 border-violet-600 hover:bg-violet-700'
-                            : 'border-gray-300 hover:border-violet-400' }}">
+                            ? 'bg-brand-500 border-brand-500 hover:bg-brand-600'
+                            : 'border-gray-300 hover:border-brand-400' }}">
                         @if($task->status === \App\Enums\TaskStatus::Done)
                         <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>

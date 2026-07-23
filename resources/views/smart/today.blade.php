@@ -47,7 +47,7 @@
             <template x-for="(task, index) in tasks" :key="task.id">
                 <div class="flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-gray-100 hover:border-gray-200 transition cursor-pointer group" @click="openEdit(task)">
                     <button @click.stop="toggleTaskStatus(task)" class="w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center transition"
-                        :class="task.status === 'done' ? 'bg-sky-500 border-sky-500' : 'border-gray-300 hover:border-sky-400'">
+                        :class="task.status === 'done' ? 'bg-brand-500 border-brand-500' : 'border-gray-300 hover:border-brand-400'">
                         <svg x-show="task.status === 'done'" class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                         </svg>

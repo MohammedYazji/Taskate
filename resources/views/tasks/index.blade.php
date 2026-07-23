@@ -5,7 +5,7 @@
         <div class="flex items-center justify-between mb-6">
             <h1 class="text-2xl font-semibold text-gray-900">My Tasks</h1>
             <button @click="open = true"
-                class="bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition flex items-center gap-2">
+                class="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition flex items-center gap-2">
                 <span class="text-lg leading-none">+</span> New Task
             </button>
         </div>
@@ -20,7 +20,7 @@
                     </svg>
                     Filter
                     @if(request()->hasAny(['priority', 'status', 'date']))
-                        <span class="w-1.5 h-1.5 bg-violet-600 rounded-full"></span>
+                        <span class="w-1.5 h-1.5 bg-brand-500 rounded-full"></span>
                     @endif
                 </button>
                 <div x-show="filterOpen" x-cloak
@@ -32,7 +32,7 @@
                         <div class="space-y-2">
                             <div>
                                 <label class="block text-xs font-medium text-gray-500 mb-1">Priority</label>
-                                <select name="priority" class="w-full text-xs border border-gray-200 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-violet-500" onchange="this.form.submit()">
+                                <select name="priority" class="w-full text-xs border border-gray-200 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-brand-500" onchange="this.form.submit()">
                                     <option value="">All</option>
                                     <option value="high" {{ request('priority') === 'high' ? 'selected' : '' }}>High</option>
                                     <option value="medium" {{ request('priority') === 'medium' ? 'selected' : '' }}>Medium</option>
@@ -41,7 +41,7 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-500 mb-1">Status</label>
-                                <select name="status" class="w-full text-xs border border-gray-200 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-violet-500" onchange="this.form.submit()">
+                                <select name="status" class="w-full text-xs border border-gray-200 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-brand-500" onchange="this.form.submit()">
                                     <option value="">All</option>
                                     <option value="todo" {{ request('status') === 'todo' ? 'selected' : '' }}>Todo</option>
                                     <option value="done" {{ request('status') === 'done' ? 'selected' : '' }}>Done</option>
@@ -51,7 +51,7 @@
                             <input type="hidden" name="date" value="{{ request('date') }}">
                             @endif
                             @if(request()->hasAny(['priority', 'status', 'date']))
-                            <a href="{{ route('tasks.index') }}" class="block text-xs text-violet-600 hover:text-violet-700 mt-2">Clear filters</a>
+                            <a href="{{ route('tasks.index') }}" class="block text-xs text-brand-500 hover:text-brand-600 mt-2">Clear filters</a>
                             @endif
                         </div>
                     </form>
@@ -66,7 +66,7 @@
                     </svg>
                     Sort
                     @if(request('sort'))
-                        <span class="w-1.5 h-1.5 bg-violet-600 rounded-full"></span>
+                        <span class="w-1.5 h-1.5 bg-brand-500 rounded-full"></span>
                     @endif
                 </button>
                 <div x-show="sortOpen" x-cloak
@@ -89,7 +89,7 @@
                             <label class="flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-50 cursor-pointer">
                                 <input type="radio" name="sort" value="{{ $val }}"
                                     {{ request('sort', '') === $val ? 'checked' : '' }}
-                                    class="text-violet-600 focus:ring-violet-500"
+                                    class="text-brand-500 focus:ring-brand-500"
                                     onchange="this.form.submit()">
                                 <span class="text-xs text-gray-600">{{ $label }}</span>
                             </label>
@@ -110,8 +110,8 @@
                     <button type="submit"
                         class="w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center cursor-pointer transition
                         {{ $task->status === \App\Enums\TaskStatus::Done
-                            ? 'bg-violet-600 border-violet-600 hover:bg-violet-700'
-                            : 'border-gray-300 hover:border-violet-400' }}">
+                            ? 'bg-brand-500 border-brand-500 hover:bg-brand-600'
+                            : 'border-gray-300 hover:border-brand-400' }}">
                         @if($task->status === \App\Enums\TaskStatus::Done)
                         <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>

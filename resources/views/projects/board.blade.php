@@ -18,7 +18,7 @@
                 <span class="w-px h-5 bg-gray-200"></span>
                 <form method="GET" action="{{ route('projects.board', $project) }}" id="sprint-switcher">
                     <select name="sprint_id" onchange="this.form.submit()"
-                        class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-violet-500">
+                        class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-brand-500">
                         <option value="">Backlog</option>
                         @foreach($sprints as $sprint)
                         <option value="{{ $sprint->id }}" {{ $sprintId == $sprint->id ? 'selected' : '' }}>

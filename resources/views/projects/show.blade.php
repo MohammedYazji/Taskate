@@ -32,7 +32,7 @@
                     Back to Projects
                 </a>
                 <button @click="newOpen = true"
-                    class="bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition flex items-center gap-2">
+                    class="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition flex items-center gap-2">
                     <span class="text-lg leading-none">+</span> Add Task
                 </button>
             </div>
@@ -59,8 +59,8 @@
                     <button type="submit"
                         class="w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center cursor-pointer transition
                         {{ $task->status === \App\Enums\TaskStatus::Done
-                            ? 'bg-violet-600 border-violet-600 hover:bg-violet-700'
-                            : 'border-gray-300 hover:border-violet-400' }}">
+                            ? 'bg-brand-500 border-brand-500 hover:bg-brand-600'
+                            : 'border-gray-300 hover:border-brand-400' }}">
                         @if($task->status === \App\Enums\TaskStatus::Done)
                         <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
@@ -102,7 +102,7 @@
                                 tag_ids: {{ json_encode($task->tags->pluck('id')->toArray()) }}
                             };
                             editOpen = true"
-                        class="p-1.5 text-gray-300 hover:text-violet-500 hover:bg-violet-50 rounded-lg transition"
+                        class="p-1.5 text-gray-300 hover:text-brand-500 hover:bg-brand-50 rounded-lg transition"
                         title="Edit">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -157,7 +157,7 @@
                             body: JSON.stringify({ status: editTask.status }),
                         })
                     " class="w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center transition"
-                        :class="editTask.status === 'done' ? 'bg-violet-600 border-violet-600' : 'border-gray-300 hover:border-violet-400'">
+                        :class="editTask.status === 'done' ? 'bg-brand-500 border-brand-500' : 'border-gray-300 hover:border-brand-400'">
                         <svg x-show="editTask.status === 'done'" class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                         </svg>
@@ -257,7 +257,7 @@
                 {{-- Start Focus --}}
                 <div class="px-6 py-3 border-t border-gray-200">
                     <a :href="'/pomodoro?task_id=' + editTask.id"
-                        class="flex items-center gap-2 text-sm text-violet-600 hover:text-violet-700 font-medium transition">
+                        class="flex items-center gap-2 text-sm text-brand-500 hover:text-brand-600 font-medium transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>

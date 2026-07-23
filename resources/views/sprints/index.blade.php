@@ -79,27 +79,27 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
                         <input type="text" name="name" required maxlength="100"
-                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Goal (optional)</label>
                         <textarea name="goal" rows="2"
-                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500"></textarea>
+                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500"></textarea>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
                             <input type="date" name="start_date" required
-                                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
                             <input type="date" name="end_date" required
-                                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
                         </div>
                     </div>
                     <button type="submit"
-                        class="bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
+                        class="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
                         Create Sprint
                     </button>
                 </div>
@@ -108,7 +108,7 @@
 
         <div class="mt-4">
             <a href="{{ route('projects.index') }}"
-                class="text-sm text-violet-600 hover:text-violet-700">&larr; Back to Projects</a>
+                class="text-sm text-brand-500 hover:text-brand-600">&larr; Back to Projects</a>
         </div>
     </div>
 </x-app-layout>

@@ -39,9 +39,9 @@
                                 <div class="text-[8px] text-gray-400" x-text="d"></div>
                             </template>
                             <template x-for="(day, idx) in yearDays(m-1)" :key="idx">
-                                <div class="text-[9px] py-0.5 rounded cursor-pointer hover:bg-violet-50 transition"
+                                <div class="text-[9px] py-0.5 rounded cursor-pointer hover:bg-brand-50 transition"
                                      :class="{
-                                         'bg-violet-600 text-white font-bold': day && isSameDay(currentYear, m-1, day),
+                                         'bg-brand-500 text-white font-bold': day && isSameDay(currentYear, m-1, day),
                                          'font-semibold text-gray-700': day && hasTaskOnDate(fmtDate(currentYear, m-1, day)),
                                          'text-gray-400': !day
                                      }"
@@ -69,7 +69,7 @@
                         <div class="flex items-center justify-between mb-1">
                             <span class="text-xs w-6 h-6 flex items-center justify-center rounded-full"
                                   :class="{
-                                      'bg-violet-600 text-white font-semibold': cell.isToday,
+                                      'bg-brand-500 text-white font-semibold': cell.isToday,
                                       'text-gray-700': cell.currentMonth && !cell.isToday,
                                       'text-gray-300': !cell.currentMonth
                                   }" x-text="cell.day"></span>
@@ -98,7 +98,7 @@
                     <div class="text-center py-2 border-l border-gray-100">
                         <div class="text-[10px] font-semibold text-gray-500 uppercase" x-text="day.short"></div>
                         <div class="text-lg font-bold mt-0.5"
-                             :class="day.isToday ? 'text-violet-600' : 'text-gray-800'"
+                             :class="day.isToday ? 'text-brand-500' : 'text-gray-800'"
                              x-text="day.num"></div>
                     </div>
                 </template>
@@ -172,7 +172,7 @@
                             <div class="flex items-start gap-3">
                                 <div class="w-10 text-center flex-shrink-0">
                                     <div class="text-[10px] text-gray-400 uppercase" x-text="day.short"></div>
-                                    <div class="text-sm font-bold" :class="day.isToday ? 'text-violet-600' : 'text-gray-800'" x-text="day.num"></div>
+                                    <div class="text-sm font-bold" :class="day.isToday ? 'text-brand-500' : 'text-gray-800'" x-text="day.num"></div>
                                 </div>
                                 <div class="flex-1 space-y-1">
                                     <template x-for="task in day.tasks" :key="task.id">
@@ -200,7 +200,7 @@
                     <div class="text-center py-2 border-r border-gray-100 last:border-r-0">
                         <div class="text-[10px] font-semibold text-gray-500 uppercase" x-text="day.short"></div>
                         <div class="text-lg font-bold mt-0.5"
-                             :class="day.isToday ? 'text-violet-600' : 'text-gray-800'"
+                             :class="day.isToday ? 'text-brand-500' : 'text-gray-800'"
                              x-text="day.num"></div>
                     </div>
                 </template>
@@ -236,7 +236,7 @@
                          @click="goToDate(cell.date)">
                         <span class="text-[10px] w-5 h-5 flex items-center justify-center rounded-full mb-0.5"
                               :class="{
-                                  'bg-violet-600 text-white font-semibold': cell.isToday,
+                                  'bg-brand-500 text-white font-semibold': cell.isToday,
                                   'text-gray-700': cell.currentMonth && !cell.isToday,
                                   'text-gray-300': !cell.currentMonth
                               }" x-text="cell.day"></span>
@@ -308,7 +308,7 @@
                 </div>
             </div>
             <div class="pt-2 border-t border-gray-100">
-                <a :href="'/dashboard?edit=' + editTask.id" class="text-sm text-violet-600 hover:text-violet-700 font-medium transition">Open full editor →</a>
+                <a :href="'/dashboard?edit=' + editTask.id" class="text-sm text-brand-500 hover:text-brand-600 font-medium transition">Open full editor →</a>
             </div>
 
         </div>

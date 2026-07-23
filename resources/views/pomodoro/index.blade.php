@@ -33,8 +33,8 @@
                 </svg>
             </button>
             <button @click="running ? pause() : start()"
-                class="px-10 py-3 rounded-xl text-sm font-semibold text-white transition shadow-lg shadow-violet-200"
-                :class="running ? 'bg-amber-500 hover:bg-amber-600' : mode === 'work' ? 'bg-violet-600 hover:bg-violet-700' : mode === 'short_break' ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'">
+                class="px-10 py-3 rounded-xl text-sm font-semibold text-white transition shadow-lg shadow-brand-400/30"
+                :class="running ? 'bg-amber-500 hover:bg-amber-600' : mode === 'work' ? 'bg-brand-500 hover:bg-brand-600' : mode === 'short_break' ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'">
                 <span x-text="running ? 'Pause' : 'Start'"></span>
             </button>
             <button @click="skip()"
@@ -49,7 +49,7 @@
         <div class="flex items-center justify-center gap-1 bg-gray-100 rounded-xl p-1 w-full max-w-sm mb-8">
             <button @click="switchMode('work')"
                 class="flex-1 px-4 py-2 text-xs font-semibold rounded-lg transition capitalize"
-                :class="mode === 'work' ? 'bg-white text-violet-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'">Focus (25m)</button>
+                :class="mode === 'work' ? 'bg-white text-brand-500 shadow-sm' : 'text-gray-500 hover:text-gray-700'">Focus (25m)</button>
             <button @click="switchMode('short_break')"
                 class="flex-1 px-4 py-2 text-xs font-semibold rounded-lg transition capitalize"
                 :class="mode === 'short_break' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'">Short Break (5m)</button>
@@ -61,7 +61,7 @@
         {{-- Today's Stats --}}
         <div class="grid grid-cols-3 gap-3 w-full max-w-sm">
             <div class="bg-white border border-gray-200 rounded-xl p-3 text-center">
-                <div class="text-xl font-bold text-violet-600" x-text="stats.work_count || 0"></div>
+                <div class="text-xl font-bold text-brand-500" x-text="stats.work_count || 0"></div>
                 <div class="text-[10px] text-gray-500 mt-0.5">Sessions</div>
             </div>
             <div class="bg-white border border-gray-200 rounded-xl p-3 text-center">
@@ -104,15 +104,15 @@
                     class="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-80 flex flex-col">
                     <div class="p-2 border-b border-gray-100">
                         <input type="text" x-model="taskSearch" placeholder="Search tasks..."
-                            class="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-violet-500">
+                            class="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-brand-500">
                     </div>
                     <div class="flex items-center gap-0.5 px-2 py-1.5 border-b border-gray-100">
                         <button @click="taskGroupBy = 'date'" class="px-2.5 py-1 text-[10px] font-semibold rounded-md transition"
-                            :class="taskGroupBy === 'date' ? 'bg-violet-100 text-violet-700' : 'text-gray-400 hover:text-gray-600'">Date</button>
+                            :class="taskGroupBy === 'date' ? 'bg-brand-50 text-brand-600' : 'text-gray-400 hover:text-gray-600'">Date</button>
                         <button @click="taskGroupBy = 'project'" class="px-2.5 py-1 text-[10px] font-semibold rounded-md transition"
-                            :class="taskGroupBy === 'project' ? 'bg-violet-100 text-violet-700' : 'text-gray-400 hover:text-gray-600'">Project</button>
+                            :class="taskGroupBy === 'project' ? 'bg-brand-50 text-brand-600' : 'text-gray-400 hover:text-gray-600'">Project</button>
                         <button @click="taskGroupBy = 'tag'" class="px-2.5 py-1 text-[10px] font-semibold rounded-md transition"
-                            :class="taskGroupBy === 'tag' ? 'bg-violet-100 text-violet-700' : 'text-gray-400 hover:text-gray-600'">Tag</button>
+                            :class="taskGroupBy === 'tag' ? 'bg-brand-50 text-brand-600' : 'text-gray-400 hover:text-gray-600'">Tag</button>
                     </div>
                     <div class="overflow-y-auto flex-1 p-1">
                         <template x-for="group in filteredGroups" :key="group.label">
@@ -124,10 +124,10 @@
                                 <template x-for="task in group.tasks" :key="task.id">
                                     <button @click="selectTask(task); pickerOpen = false; taskSearch = ''"
                                         class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left transition"
-                                        :class="selectedTaskId == task.id ? 'bg-violet-50 ring-1 ring-violet-200' : 'hover:bg-gray-50'">
+                                        :class="selectedTaskId == task.id ? 'bg-brand-50 ring-1 ring-brand-400/30' : 'hover:bg-gray-50'">
                                         <div class="w-2 h-2 rounded-full flex-shrink-0" :style="'background-color:' + (task.project?.color || '#8b5cf6')"></div>
                                         <span class="flex-1 text-sm truncate"
-                                            :class="selectedTaskId == task.id ? 'text-violet-700 font-medium' : 'text-gray-700'"
+                                            :class="selectedTaskId == task.id ? 'text-brand-600 font-medium' : 'text-gray-700'"
                                             x-text="task.title"></span>
                                         <template x-if="task.project">
                                             <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 flex-shrink-0" x-text="task.project.name"></span>
@@ -177,7 +177,7 @@
                             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' },
                         });
                     " class="w-5 h-5 rounded-[5px] border-2 flex-shrink-0 flex items-center justify-center transition"
-                        :class="selectedTask.status === 'done' ? 'bg-violet-600 border-violet-600' : 'border-gray-300 hover:border-violet-400'">
+                        :class="selectedTask.status === 'done' ? 'bg-brand-500 border-brand-500' : 'border-gray-300 hover:border-brand-400'">
                         <svg x-show="selectedTask.status === 'done'" class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                         </svg>
@@ -236,7 +236,7 @@
                         <div class="relative">
                             <button @click="menuOpen = !menuOpen"
                                 class="p-1.5 rounded-lg transition"
-                                :class="menuOpen ? 'bg-violet-50 text-violet-600' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'">
+                                :class="menuOpen ? 'bg-brand-50 text-brand-500' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                     <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
                                 </svg>
@@ -266,7 +266,7 @@
                                                         })
                                                     }, 500)
                                                 "
-                                                class="rounded border-gray-300 text-violet-600">
+                                                class="rounded border-gray-300 text-brand-500">
                                             <span class="text-[10px] px-1.5 py-0.5 rounded-full text-white" style="background-color: {{ $tag->color }}">{{ $tag->name }}</span>
                                         </label>
                                         @endforeach
@@ -285,7 +285,7 @@
                                                 <form method="POST" x-bind:action="`/subtasks/${sub.id}/toggle`" class="inline" @click.stop>
                                                     @csrf @method('PATCH')
                                                     <button type="submit" class="w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center transition"
-                                                        x-bind:class="sub.is_completed ? 'bg-violet-600 border-violet-600' : 'border-gray-300 hover:border-violet-400'">
+                                                        x-bind:class="sub.is_completed ? 'bg-brand-500 border-brand-500' : 'border-gray-300 hover:border-brand-400'">
                                                         <svg x-show="sub.is_completed" class="w-2 h-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                                                         </svg>
@@ -299,8 +299,8 @@
                                     <form method="POST" x-bind:action="`/tasks/${selectedTask.id}/subtasks`" class="flex gap-1.5" @click.stop>
                                         @csrf
                                         <input type="text" name="title" required maxlength="255" placeholder="Add subtask..."
-                                            class="flex-1 border border-gray-200 rounded px-2 py-1 text-[11px] outline-none focus:ring-2 focus:ring-violet-500">
-                                        <button type="submit" class="bg-violet-600 hover:bg-violet-700 text-white text-[10px] font-medium px-2 py-1 rounded transition">Add</button>
+                                            class="flex-1 border border-gray-200 rounded px-2 py-1 text-[11px] outline-none focus:ring-2 focus:ring-brand-500">
+                                        <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white text-[10px] font-medium px-2 py-1 rounded transition">Add</button>
                                     </form>
                                 </div>
                             </div>
@@ -366,8 +366,8 @@
                         <form method="POST" x-bind:action="`/tasks/${selectedTask?.id}/comments`" class="flex gap-2" @click.stop>
                             @csrf
                             <input type="text" name="body" required maxlength="1000" placeholder="Add a comment..."
-                                class="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-violet-500">
-                            <button type="submit" class="bg-violet-600 hover:bg-violet-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition">Post</button>
+                                class="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-brand-500">
+                            <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition">Post</button>
                         </form>
                     </div>
                 </div>
@@ -379,7 +379,7 @@
         <div x-show="selectedTask">
             <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 block">Focus Note</label>
             <textarea x-model="focusNote" rows="2" placeholder="What do you want to focus on this session?"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-violet-500 resize-none bg-white placeholder-gray-300"></textarea>
+                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 resize-none bg-white placeholder-gray-300"></textarea>
         </div>
 
         {{-- No task selected --}}

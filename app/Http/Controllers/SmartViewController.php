@@ -21,8 +21,7 @@ class SmartViewController extends Controller
     {
         $userId = Auth::id();
         $tasks = $this->taskRepository->getByUser($userId)
-            ->where('status', '!=', 'done')
-            ->whereDate('due_date', today())
+            ->filter(fn($t) => $t->status !== \App\Enums\TaskStatus::Done && $t->due_date && $t->due_date->isToday())
             ->values();
 
         $tags = $this->tagRepository->getByUser($userId);
@@ -35,8 +34,7 @@ class SmartViewController extends Controller
     {
         $userId = Auth::id();
         $tasks = $this->taskRepository->getByUser($userId)
-            ->where('status', '!=', 'done')
-            ->whereBetween('due_date', [today()->toDateString(), now()->addDays(7)->toDateString()])
+            ->filter(fn($t) => $t->status !== \App\Enums\TaskStatus::Done && $t->due_date && $t->due_date->gte(today()) && $t->due_date->lte(now()->addDays(7)))
             ->values();
 
         $tags = $this->tagRepository->getByUser($userId);
@@ -52,8 +50,7 @@ class SmartViewController extends Controller
 
         $tasks = $inboxProject
             ? $this->taskRepository->getByUser($userId)
-                ->where('project_id', $inboxProject->id)
-                ->where('status', '!=', 'done')
+                ->filter(fn($t) => $t->project_id === $inboxProject->id && $t->status !== \App\Enums\TaskStatus::Done)
                 ->values()
             : collect();
 

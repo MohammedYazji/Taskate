@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    --color-coral: #FFB6A6;
+    --color-cream: #FFEBD3;
+    --color-mint: #9BCEC1;
+    --color-sky: #67A2C5;
+}
+
 [x-cloak] {
     display: none !important;
 }
@@ -71,7 +78,7 @@
     height: 1rem;
     border-radius: 0.25rem;
     border: 1.5px solid #d1d5db;
-    accent-color: #7c3aed;
+    accent-color: #67A2C5;
     cursor: pointer;
 }
 
@@ -115,6 +122,6 @@
 }
 
 .task-editor-area .tiptap a {
-    color: #7c3aed;
+    color: #67A2C5;
     text-decoration: underline;
 }

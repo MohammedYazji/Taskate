@@ -12,7 +12,7 @@
 
     <x-sidebar />
 
-    <div class="flex flex-col flex-1 overflow-hidden">
+    <div class="flex flex-col flex-1 overflow-hidden min-w-0">
         @if(!request()->routeIs('eisenhower*'))
         <x-topbar />
         @endif

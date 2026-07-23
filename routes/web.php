@@ -3,6 +3,7 @@
 use App\Http\Controllers\AiTaskController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\EisenhowerController;
 use App\Http\Controllers\KanbanController;
 use App\Http\Controllers\PomodoroController;
 use App\Http\Controllers\ProfileController;
@@ -36,6 +37,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/pomodoro', [PomodoroController::class, 'index'])->name('pomodoro.index');
     Route::post('/pomodoro/sessions', [PomodoroController::class, 'store'])->name('pomodoro.sessions.store');
     Route::get('/pomodoro/stats', [PomodoroController::class, 'stats'])->name('pomodoro.stats');
+
+    // Eisenhower Matrix
+    Route::get('/eisenhower', [EisenhowerController::class, 'index'])->name('eisenhower.index');
+    Route::patch('/tasks/{task}/eisenhower', [EisenhowerController::class, 'move'])->name('eisenhower.move');
 
     // Subtask Routes
     Route::post('/tasks/{task}/subtasks', [SubtaskController::class, 'store'])->name('subtasks.store');

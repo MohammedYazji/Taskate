@@ -23,4 +23,5 @@ interface TaskRepositoryInterface
     public function getByProjectAndSprint(int $projectId, ?int $sprintId): Collection;
     public function getBacklog(int $projectId): Collection;
     public function moveTask(Task $task, TaskStatus $status, int $position): Task;
+    public function getByQuadrants(int $userId): Collection;
 }

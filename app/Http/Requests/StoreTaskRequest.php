@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Importance;
 use App\Enums\Priority;
 use App\Enums\TaskStatus;
 use Illuminate\Foundation\Http\FormRequest;
@@ -21,6 +22,7 @@ class StoreTaskRequest extends FormRequest
             'description' => 'nullable|string',
             'is_recurring' => 'boolean|nullable',
             'priority' => [new Enum(Priority::class)],
+            'importance' => ['nullable', new Enum(Importance::class)],
             'status' => [new Enum(TaskStatus::class)],
             'due_date' => 'nullable|date',
             'project_id' => 'nullable|integer|exists:projects,id',

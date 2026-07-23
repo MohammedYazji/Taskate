@@ -151,4 +151,13 @@ class TaskRepository implements TaskRepositoryInterface
         ]);
         return $task->fresh();
     }
+
+    // === Get non-done tasks for Eisenhower Matrix ===
+    public function getByQuadrants(int $userId): Collection
+    {
+        return Task::with('project', 'tags', 'subtasks')
+            ->where('user_id', $userId)
+            ->where('status', '!=', TaskStatus::Done)
+            ->get();
+    }
 }

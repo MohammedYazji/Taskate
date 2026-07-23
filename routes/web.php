@@ -9,6 +9,7 @@ use App\Http\Controllers\PomodoroController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SmartViewController;
 use App\Http\Controllers\SprintController;
 use App\Http\Controllers\SubtaskController;
 use App\Http\Controllers\TagController;
@@ -32,6 +33,11 @@ Route::middleware('auth')->group(function () {
 
     // Calendar
     Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar');
+
+    // Smart Views
+    Route::get('/today', [SmartViewController::class, 'today'])->name('smart.today');
+    Route::get('/next7days', [SmartViewController::class, 'next7Days'])->name('smart.next7days');
+    Route::get('/inbox', [SmartViewController::class, 'inbox'])->name('smart.inbox');
 
     // Pomodoro Timer
     Route::get('/pomodoro', [PomodoroController::class, 'index'])->name('pomodoro.index');

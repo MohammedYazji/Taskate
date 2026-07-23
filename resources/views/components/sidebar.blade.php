@@ -48,6 +48,13 @@
             </svg>
             Calendar
         </a>
+        <a href="{{ route('eisenhower.index') }}"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm {{ request()->routeIs('eisenhower*') ? 'bg-violet-600/20 text-violet-400' : 'text-gray-400 hover:text-white hover:bg-white/5' }} transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
+            </svg>
+            Matrix
+        </a>
         <a href="{{ route('pomodoro.index') }}"
             class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm {{ request()->routeIs('pomodoro*') ? 'bg-violet-600/20 text-violet-400' : 'text-gray-400 hover:text-white hover:bg-white/5' }} transition">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

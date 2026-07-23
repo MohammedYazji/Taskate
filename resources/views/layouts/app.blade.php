@@ -13,7 +13,9 @@
     <x-sidebar />
 
     <div class="flex flex-col flex-1 overflow-hidden">
+        @if(!request()->routeIs('eisenhower*'))
         <x-topbar />
+        @endif
         <main class="flex-1 overflow-y-auto p-6">
             {{ $slot }}
         </main>

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Folder;
 use App\Repositories\Interfaces\CommentRepositoryInterface;
 use App\Repositories\CommentRepository;
 use App\Repositories\Interfaces\PomodoroSessionRepositoryInterface;
@@ -59,6 +60,7 @@ class AppServiceProvider extends ServiceProvider
 
             $projects = $projectRepo->getWithTaskCounts($userId);
             $tags = $tagRepo->getByUser($userId);
+            $folders = Folder::where('user_id', $userId)->with('projects')->orderBy('pinned', 'desc')->orderBy('position')->get();
             $todayCount = $taskRepo->countDueToday($userId);
 
             $next7Count = $taskRepo->getByUser($userId)
@@ -72,7 +74,7 @@ class AppServiceProvider extends ServiceProvider
             $totalTasks = $taskRepo->countByUser($userId);
             $completedTasks = $taskRepo->countCompleted($userId);
 
-            $view->with(compact('projects', 'tags', 'todayCount', 'next7Count', 'inboxCount', 'totalTasks', 'completedTasks'));
+            $view->with(compact('projects', 'tags', 'folders', 'todayCount', 'next7Count', 'inboxCount', 'totalTasks', 'completedTasks'));
         });
     }
 }

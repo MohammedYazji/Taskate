@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Project extends Model
 {
     protected $fillable = [
-        'user_id', 'name', 'color', 'description'
+        'user_id', 'name', 'color', 'icon', 'view_type', 'pinned', 'folder_id', 'description', 'position'
     ];
 
     // === Relationships ===
@@ -21,6 +21,11 @@ class Project extends Model
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
+    }
+
+    public function folder(): BelongsTo
+    {
+        return $this->belongsTo(Folder::class);
     }
 
     public function sprints(): HasMany

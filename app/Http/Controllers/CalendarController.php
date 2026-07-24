@@ -40,6 +40,7 @@ class CalendarController extends Controller
         $tasks = Task::where('user_id', auth()->id())
             ->whereNotNull('due_date')
             ->whereBetween('due_date', [$start->toDateString(), $end->toDateString()])
+            ->when($request->get('project_id'), fn($q, $pid) => $q->where('project_id', $pid))
             ->with('project')
             ->get()
             ->map(fn($t) => [

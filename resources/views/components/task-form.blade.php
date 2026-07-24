@@ -40,15 +40,15 @@
             <input type="text" name="title" required
                 @if(!$alpine) value="{{ $task->title ?? '' }}" @endif
                 @if($alpine) x-model="editTask.title" @input="saveField()" @endif
-                class="w-full text-lg font-semibold text-brand-50 outline-none border-0 bg-transparent placeholder-brand-100/30"
+                class="w-full text-lg font-semibold text-gray-900 outline-none border-0 bg-transparent placeholder-gray-300"
                 placeholder="Task title...">
         </div>
 
         @if(!$alpine)
         <div>
-            <label class="block text-sm font-medium text-brand-100 mb-1">Priority</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
             <select name="priority"
-                class="w-full border border-brand-50/10 bg-brand-800 rounded-lg px-3 py-2 text-sm text-brand-50 outline-none focus:ring-2 focus:ring-brand-600">
+                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
                 <option value="low" {{ isset($task) && $task->priority->value === 'low' ? 'selected' : '' }}>Low</option>
                 <option value="medium" {{ !isset($task) || $task->priority->value === 'medium' ? 'selected' : '' }}>Medium</option>
                 <option value="high" {{ isset($task) && $task->priority->value === 'high' ? 'selected' : '' }}>High</option>
@@ -56,10 +56,10 @@
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-brand-100 mb-1">Due Date</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
             <input type="date" name="due_date"
                 value="{{ $task && $task->due_date ? $task->due_date->format('Y-m-d') : ($defaultDate ?? '') }}"
-                class="w-full border border-brand-50/10 bg-brand-800 rounded-lg px-3 py-2 text-sm text-brand-50 outline-none focus:ring-2 focus:ring-brand-600">
+                class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
         </div>
 
         <div>
@@ -67,8 +67,8 @@
                 <input type="hidden" name="is_recurring" value="0">
                 <input type="checkbox" name="is_recurring" value="1"
                     {{ $task && $task->is_recurring ? 'checked' : '' }}
-                    class="w-4 h-4 rounded border-brand-100/30 text-brand-600 focus:ring-brand-600">
-                <span class="text-sm text-brand-100">Recurring task</span>
+                    class="w-4 h-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500">
+                <span class="text-sm text-gray-700">Recurring task</span>
             </label>
         </div>
         @endif
@@ -79,9 +79,9 @@
     @endif
 
     @if(!$alpine)
-    <div class="px-6 py-4 border-t border-brand-50/10">
+    <div class="px-6 py-4 border-t border-gray-200">
         <button type="submit"
-            class="w-full bg-brand-600 hover:bg-brand-700 text-brand-950 text-sm font-medium py-2.5 rounded-lg transition">
+            class="w-full bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium py-2.5 rounded-lg transition">
             Create Task
         </button>
     </div>

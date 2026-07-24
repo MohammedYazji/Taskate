@@ -43,9 +43,6 @@
                 <span class="text-xs font-semibold px-2 py-0.5 rounded {{ $color }} uppercase tracking-wide">
                     {{ $task->priority->value }}
                 </span>
-                <span class="text-xs text-gray-400">
-                    {{ $task->due_date ? $task->due_date->format('M j') : '—' }}
-                </span>
             </div>
             @empty
             <div class="px-5 py-10 text-center text-gray-400 text-sm">

@@ -67,9 +67,6 @@
                             <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded {{ $color }} uppercase tracking-wide">
                                 {{ $task->priority->value }}
                             </span>
-                            @if($task->due_date)
-                            <span class="text-[10px] text-gray-400">{{ $task->due_date->format('M j') }}</span>
-                            @endif
                         </div>
                     </div>
                     @empty

@@ -95,9 +95,6 @@
                                                     'text-green-600 bg-green-100': task.priority === 'low'
                                                 }" x-text="task.priority"></span>
                                             @endif
-                                            <span x-show="task.due_date" class="text-[10px] font-medium px-1.5 py-0.5 rounded"
-                                                :class="isOverdue(task.due_date, task.status) ? 'text-red-500 bg-red-50' : 'text-gray-500 bg-gray-100'"
-                                                x-text="formatDate(task.due_date)"></span>
                                             <span x-show="task.subtasks.length > 0" class="text-[10px] text-gray-400"
                                                 x-text="`${task.subtasks.filter(s => s.is_completed).length}/${task.subtasks.length}`"></span>
                                         </div>
@@ -129,8 +126,6 @@
                                                     'text-orange-500 bg-orange-100': task.priority === 'medium',
                                                     'text-green-600 bg-green-100': task.priority === 'low'
                                                 }" x-text="task.priority"></span>
-                                            <span x-show="task.due_date" class="text-[10px] font-medium px-1.5 py-0.5 rounded text-gray-500 bg-gray-100"
-                                                x-text="formatDate(task.due_date)"></span>
                                             <span x-show="task.subtasks.length > 0" class="text-[10px] text-gray-400"
                                                 x-text="`${task.subtasks.filter(s => s.is_completed).length}/${task.subtasks.length}`"></span>
                                         </div>
@@ -162,9 +157,6 @@
                                                     'text-orange-500 bg-orange-100': task.priority === 'medium',
                                                     'text-green-600 bg-green-100': task.priority === 'low'
                                                 }" x-text="task.priority"></span>
-                                            <span x-show="task.due_date" class="text-[10px] font-medium px-1.5 py-0.5 rounded"
-                                                :class="isOverdue(task.due_date, task.status) ? 'text-red-500 bg-red-50' : 'text-gray-500 bg-gray-100'"
-                                                x-text="formatDate(task.due_date)"></span>
                                         </div>
                                     </div>
                                 </template>
@@ -194,8 +186,6 @@
                                                     'text-orange-500 bg-orange-100': task.priority === 'medium',
                                                     'text-green-600 bg-green-100': task.priority === 'low'
                                                 }" x-text="task.priority"></span>
-                                            <span x-show="task.due_date" class="text-[10px] font-medium px-1.5 py-0.5 rounded text-gray-500 bg-gray-100"
-                                                x-text="formatDate(task.due_date)"></span>
                                         </div>
                                     </div>
                                 </template>

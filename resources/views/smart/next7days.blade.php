@@ -53,9 +53,6 @@
                         </svg>
                     </button>
                     <span class="flex-1 text-sm" :class="task.status === 'done' ? 'line-through text-gray-400' : 'text-gray-900'" x-text="task.title"></span>
-                    <span x-show="task.due_date" class="text-[10px] font-medium px-1.5 py-0.5 rounded"
-                        :class="isOverdue(task.due_date, task.status) ? 'text-red-500 bg-red-50' : 'text-gray-500 bg-gray-100'"
-                        x-text="formatDate(task.due_date)"></span>
                     <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase"
                         :class="{'text-red-500 bg-red-50': task.priority === 'high', 'text-orange-500 bg-orange-50': task.priority === 'medium', 'text-green-600 bg-green-50': task.priority === 'low'}"
                         x-text="task.priority"></span>

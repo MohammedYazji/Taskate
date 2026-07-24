@@ -69,6 +69,10 @@ class TaskController extends Controller
             $this->tagRepository->attachToTask($task, $allowedTagIds);
         }
 
+        if ($task->project_id) {
+            return redirect()->route('projects.show', $task->project_id);
+        }
+
         return redirect()->route('dashboard');
     }
 

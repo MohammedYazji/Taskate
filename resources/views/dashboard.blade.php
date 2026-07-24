@@ -78,6 +78,17 @@
         {{-- Left Column --}}
         <div class="flex-1 min-w-0">
 
+            {{-- Search Bar --}}
+            <form method="GET" action="{{ route('search') }}" class="mb-6">
+                <div class="flex items-center gap-2 bg-gray-100 rounded-xl px-4 py-2.5 w-full max-w-md">
+                    <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Search tasks, projects..."
+                        class="bg-transparent text-sm text-gray-600 outline-none ring-0 border-0 w-full placeholder-gray-400">
+                </div>
+            </form>
+
             {{-- Greeting --}}
             <div class="mb-6">
                 <h1 class="text-2xl font-bold text-gray-900">
@@ -260,7 +271,6 @@
                         <div class="w-1 h-8 rounded-full bg-brand-500 flex-shrink-0 mt-0.5"></div>
                         <div>
                             <p class="text-xs font-medium text-gray-800">{{ $task->title }}</p>
-                            <p class="text-xs text-gray-400">{{ $task->due_date->format('M j') }}</p>
                         </div>
                     </div>
                     @empty
@@ -594,24 +604,65 @@
             x-transition:leave="transition ease-in duration-200"
             x-transition:leave-start="translate-x-0"
             x-transition:leave-end="translate-x-full"
-            x-data="{ newTitle: '', newPriority: 'medium', newDate: '' }">
+            x-data="{ newTitle: '', newPriority: 'medium', newDate: '' }"
+            x-on:date-picker-ok.window="
+                if (newOpen) {
+                    newDate = $event.detail.date || '';
+                }
+            ">
 
-            <div class="grid grid-cols-3 gap-2 px-6 py-3 border-b border-gray-200 flex-shrink-0 items-center">
-                <div class="flex items-center justify-center">
-                    <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center">
+            <div class="flex items-center gap-3 px-6 py-3 border-b border-gray-200 flex-shrink-0">
+                <button @click="newOpen = false" class="text-gray-400 hover:text-gray-600 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+                <div class="w-px h-4 bg-gray-200"></div>
+                <div class="flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <x-date-picker />
+                </div>
+                <div class="flex-1"></div>
+                <div class="relative" x-data="{ flagOpen: false }" @click.outside="flagOpen = false">
+                    <button @click="flagOpen = !flagOpen" class="p-1.5 rounded-lg transition hover:bg-gray-50">
+                        <svg class="w-4 h-4" :class="{
+                            'text-green-500': newPriority === 'low',
+                            'text-yellow-500': newPriority === 'medium',
+                            'text-red-500': newPriority === 'high',
+                            'text-gray-300': !newPriority
+                        }" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </button>
+                    <div x-show="flagOpen" x-cloak
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                        x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                        x-transition:leave="transition ease-in duration-100"
+                        x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                        x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
+                        class="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1 w-32">
+                        <button @click="newPriority = 'low'; flagOpen = false"
+                            class="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 transition"
+                            :class="newPriority === 'low' ? 'bg-green-50 text-green-600 font-semibold' : 'text-gray-600'">
+                            <svg class="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="currentColor"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15" stroke="currentColor" stroke-width="2"/></svg>
+                            Low
+                        </button>
+                        <button @click="newPriority = 'medium'; flagOpen = false"
+                            class="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 transition"
+                            :class="newPriority === 'medium' ? 'bg-yellow-50 text-yellow-600 font-semibold' : 'text-gray-600'">
+                            <svg class="w-4 h-4 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15" stroke="currentColor" stroke-width="2"/></svg>
+                            Medium
+                        </button>
+                        <button @click="newPriority = 'high'; flagOpen = false"
+                            class="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 transition"
+                            :class="newPriority === 'high' ? 'bg-red-50 text-red-600 font-semibold' : 'text-gray-600'">
+                            <svg class="w-4 h-4 text-red-500" viewBox="0 0 24 24" fill="currentColor"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15" stroke="currentColor" stroke-width="2"/></svg>
+                            High
+                        </button>
                     </div>
-                </div>
-                <div class="flex items-center justify-center">
-                    <input type="date" x-model="newDate"
-                        class="w-full text-center text-xs font-medium border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-brand-500 text-gray-700">
-                </div>
-                <div class="flex items-center justify-center">
-                    <select x-model="newPriority"
-                        class="w-full text-center text-xs font-medium border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-brand-500 text-gray-700">
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                    </select>
                 </div>
             </div>
 

@@ -1,10 +1,16 @@
 <x-app-layout>
     <div x-data="{
-        editOpen: false,
-        editTask: { id: null, title: '', description: '', priority: 'medium', due_date: '', is_recurring: false, tag_ids: [] },
-        newOpen: false
+        newOpen: false,
+        newTitle: '',
+        newPriority: 'medium',
+        newDate: ''
     }"
          x-on:open-task-panel.document="newOpen = true"
+         x-on:date-picker-ok.window="
+            if (newOpen) {
+                newDate = $event.detail.date || '';
+            }
+         "
          class="max-w-4xl">
 
         {{-- Project Header --}}
@@ -32,7 +38,8 @@
                     Back to Projects
                 </a>
                 <button @click="newOpen = true"
-                    class="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition flex items-center gap-2">
+                    class="hover:text-white text-sm font-medium px-4 py-2 rounded-lg transition flex items-center gap-2 text-white"
+                    style="background-color: {{ $project->color }}">
                     <span class="text-lg leading-none">+</span> Add Task
                 </button>
             </div>
@@ -42,25 +49,16 @@
         <div class="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
             @forelse($tasks as $task)
             <div class="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition group cursor-pointer"
-                 @click="
-                    editTask = {
-                        id: {{ $task->id }},
-                        title: {{ json_encode($task->title) }},
-                        description: {{ json_encode($task->description) }},
-                        priority: {{ json_encode($task->priority->value) }},
-                        due_date: {{ json_encode($task->due_date ? $task->due_date->format('Y-m-d') : '') }},
-                        is_recurring: {{ $task->is_recurring ? 'true' : 'false' }},
-                        tag_ids: {{ json_encode($task->tags->pluck('id')->toArray()) }}
-                    };
-                    editOpen = true">
+                 @click="window.location.href = '/dashboard?edit={{ $task->id }}'">
 
                 <form method="POST" action="{{ route('tasks.toggle', $task) }}" class="inline" @click.stop>
                     @csrf @method('PATCH')
                     <button type="submit"
                         class="w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center cursor-pointer transition
                         {{ $task->status === \App\Enums\TaskStatus::Done
-                            ? 'bg-brand-500 border-brand-500 hover:bg-brand-600'
-                            : 'border-gray-300 hover:border-brand-400' }}">
+                            ? 'border-transparent hover:opacity-80'
+                            : 'border-gray-300 hover:opacity-80' }}"
+                        @if($task->status === \App\Enums\TaskStatus::Done) style="background-color: {{ $project->color }}" @endif>
                         @if($task->status === \App\Enums\TaskStatus::Done)
                         <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
@@ -85,24 +83,9 @@
                     {{ ucfirst($task->priority->value) }}
                 </span>
 
-                <span class="text-xs text-gray-400">
-                    {{ $task->due_date ? $task->due_date->format('M j') : '—' }}
-                </span>
-
                 <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                    <a href="#"
-                        @click.prevent="
-                            editTask = {
-                                id: {{ $task->id }},
-                                title: {{ json_encode($task->title) }},
-                                description: {{ json_encode($task->description) }},
-                                priority: {{ json_encode($task->priority->value) }},
-                                due_date: {{ json_encode($task->due_date ? $task->due_date->format('Y-m-d') : '') }},
-                                is_recurring: {{ $task->is_recurring ? 'true' : 'false' }},
-                                tag_ids: {{ json_encode($task->tags->pluck('id')->toArray()) }}
-                            };
-                            editOpen = true"
-                        class="p-1.5 text-gray-300 hover:text-brand-500 hover:bg-brand-50 rounded-lg transition"
+                    <a href="/dashboard?edit={{ $task->id }}"
+                        class="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
                         title="Edit">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -128,8 +111,8 @@
             @endforelse
         </div>
 
-        {{-- Edit Task Panel --}}
-        <div x-show="editOpen" x-cloak @click="editOpen = false"
+        {{-- New Task Panel --}}
+        <div x-show="newOpen" x-cloak @click="newOpen = false"
                 class="fixed inset-0 bg-black/30 z-40"
                 x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0"
@@ -139,7 +122,7 @@
                 x-transition:leave-end="opacity-0">
             </div>
 
-            <div x-show="editOpen" x-cloak
+            <div x-show="newOpen" x-cloak @click.stop
                 class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col"
                 x-transition:enter="transition ease-out duration-300"
                 x-transition:enter-start="translate-x-full"
@@ -149,17 +132,9 @@
                 x-transition:leave-end="translate-x-full">
 
                 <div class="flex items-center gap-3 px-6 py-3 border-b border-gray-200 flex-shrink-0">
-                    <button @click="
-                        editTask.status = editTask.status === 'done' ? 'todo' : 'done';
-                        fetch('/tasks/' + editTask.id, {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' },
-                            body: JSON.stringify({ status: editTask.status }),
-                        })
-                    " class="w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center transition"
-                        :class="editTask.status === 'done' ? 'bg-brand-500 border-brand-500' : 'border-gray-300 hover:border-brand-400'">
-                        <svg x-show="editTask.status === 'done'" class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                    <button @click="newOpen = false" class="text-gray-400 hover:text-gray-600 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
                     </button>
                     <div class="w-px h-4 bg-gray-200"></div>
@@ -173,10 +148,10 @@
                     <div class="relative" x-data="{ flagOpen: false }" @click.outside="flagOpen = false">
                         <button @click="flagOpen = !flagOpen" class="p-1.5 rounded-lg transition hover:bg-gray-50">
                             <svg class="w-4 h-4" :class="{
-                                'text-green-500': editTask.priority === 'low',
-                                'text-yellow-500': editTask.priority === 'medium',
-                                'text-red-500': editTask.priority === 'high',
-                                'text-gray-300': !editTask.priority
+                                'text-green-500': newPriority === 'low',
+                                'text-yellow-500': newPriority === 'medium',
+                                'text-red-500': newPriority === 'high',
+                                'text-gray-300': !newPriority
                             }" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15" stroke="currentColor" stroke-width="2"/>
                             </svg>
@@ -189,110 +164,26 @@
                             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                             x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
                             class="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1 w-32">
-                            <button @click="editTask.priority = 'low'; flagOpen = false; fetch('/tasks/' + editTask.id, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' }, body: JSON.stringify({ priority: 'low' }) })"
+                            <button @click="newPriority = 'low'; flagOpen = false"
                                 class="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 transition"
-                                :class="editTask.priority === 'low' ? 'bg-green-50 text-green-600 font-semibold' : 'text-gray-600'">
+                                :class="newPriority === 'low' ? 'bg-green-50 text-green-600 font-semibold' : 'text-gray-600'">
                                 <svg class="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="currentColor"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15" stroke="currentColor" stroke-width="2"/></svg>
                                 Low
                             </button>
-                            <button @click="editTask.priority = 'medium'; flagOpen = false; fetch('/tasks/' + editTask.id, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' }, body: JSON.stringify({ priority: 'medium' }) })"
+                            <button @click="newPriority = 'medium'; flagOpen = false"
                                 class="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 transition"
-                                :class="editTask.priority === 'medium' ? 'bg-yellow-50 text-yellow-600 font-semibold' : 'text-gray-600'">
+                                :class="newPriority === 'medium' ? 'bg-yellow-50 text-yellow-600 font-semibold' : 'text-gray-600'">
                                 <svg class="w-4 h-4 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15" stroke="currentColor" stroke-width="2"/></svg>
                                 Medium
                             </button>
-                            <button @click="editTask.priority = 'high'; flagOpen = false; fetch('/tasks/' + editTask.id, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' }, body: JSON.stringify({ priority: 'high' }) })"
+                            <button @click="newPriority = 'high'; flagOpen = false"
                                 class="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 transition"
-                                :class="editTask.priority === 'high' ? 'bg-red-50 text-red-600 font-semibold' : 'text-gray-600'">
+                                :class="newPriority === 'high' ? 'bg-red-50 text-red-600 font-semibold' : 'text-gray-600'">
                                 <svg class="w-4 h-4 text-red-500" viewBox="0 0 24 24" fill="currentColor"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15" stroke="currentColor" stroke-width="2"/></svg>
                                 High
                             </button>
                         </div>
                     </div>
-                </div>
-
-                <x-task-form alpine :tags="$tags" :projects="[$project]" x-bind:action="`/tasks/${editTask.id}`" />
-
-                {{-- Description editor --}}
-                <div class="px-6 py-4 border-t border-gray-200"
-                     x-data="{
-                         html: '',
-                         editor: null,
-                         saveTimer: null,
-                         save() {
-                             clearTimeout(this.saveTimer)
-                             this.saveTimer = setTimeout(() => {
-                                 fetch('/tasks/' + editTask.id + '/description', {
-                                     method: 'PATCH',
-                                     headers: {
-                                         'Content-Type': 'application/json',
-                                         'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-                                         'X-Requested-With': 'XMLHttpRequest',
-                                     },
-                                     body: JSON.stringify({ description: this.html }),
-                                 })
-                             }, 500)
-                         }
-                     }"
-                     x-effect="if (editOpen && editTask.id) {
-                         html = editTask.description || '';
-                         if (editor && editor.getHTML() !== html) {
-                             editor.commands.setContent(html, false);
-                         }
-                     }"
-                     x-init="$watch('editOpen', (open) => {
-                         if (open && editTask.id && !editor) {
-                             $nextTick(() => {
-                                 editor = initTaskEditor($refs.descEditor, {
-                                     content: editTask.description || '',
-                                     placeholder: 'Start writing...',
-                                     onUpdate: (val) => { html = val; this.save() },
-                                 })
-                             })
-                         }
-                     })">
-                    <div x-ref="descEditor" class="task-editor-area min-h-[200px] text-sm leading-relaxed text-gray-800 outline-none"></div>
-                </div>
-
-                {{-- Start Focus --}}
-                <div class="px-6 py-3 border-t border-gray-200">
-                    <a :href="'/pomodoro?task_id=' + editTask.id"
-                        class="flex items-center gap-2 text-sm text-brand-500 hover:text-brand-600 font-medium transition">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        Start Focus Session
-                    </a>
-                </div>
-            </div>
-
-        {{-- New Task Panel --}}
-        <div x-show="newOpen" x-cloak @click="newOpen = false"
-                class="fixed inset-0 bg-black/30 z-40"
-                x-transition:enter="transition ease-out duration-200"
-                x-transition:enter-start="opacity-0"
-                x-transition:enter-end="opacity-100"
-                x-transition:leave="transition ease-in duration-150"
-                x-transition:leave-start="opacity-100"
-                x-transition:leave-end="opacity-0">
-            </div>
-
-            <div x-show="newOpen" x-cloak
-                class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col"
-                x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="translate-x-full"
-                x-transition:enter-end="translate-x-0"
-                x-transition:leave="transition ease-in duration-200"
-                x-transition:leave-start="translate-x-0"
-                x-transition:leave-end="translate-x-full">
-
-                <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-lg font-semibold text-gray-900">New Task</h2>
-                    <button @click="newOpen = false" class="text-gray-400 hover:text-gray-600 transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
                 </div>
 
                 <x-task-form :tags="$tags" :projects="[$project]" />

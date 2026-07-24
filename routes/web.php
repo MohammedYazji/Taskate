@@ -7,6 +7,7 @@ use App\Http\Controllers\EisenhowerController;
 use App\Http\Controllers\KanbanController;
 use App\Http\Controllers\PomodoroController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\FolderController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SmartViewController;
@@ -57,6 +58,17 @@ Route::middleware('auth')->group(function () {
     // Project Resources
     Route::resource('projects', ProjectController::class)
         ->only(['index', 'store', 'show', 'update', 'destroy']);
+
+    Route::post('/projects/{project}/duplicate', [ProjectController::class, 'duplicate'])
+        ->name('projects.duplicate');
+    Route::patch('/projects/{project}/pin', [ProjectController::class, 'pin'])
+        ->name('projects.pin');
+
+    // Folder Routes
+    Route::post('/folders', [FolderController::class, 'store'])->name('folders.store');
+    Route::patch('/folders/{folder}', [FolderController::class, 'update'])->name('folders.update');
+    Route::patch('/folders/{folder}/pin', [FolderController::class, 'pin'])->name('folders.pin');
+    Route::delete('/folders/{folder}', [FolderController::class, 'destroy'])->name('folders.destroy');
 
     // Tag Resources
     Route::resource('tags', TagController::class)

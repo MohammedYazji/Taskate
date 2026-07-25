@@ -85,7 +85,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
                     <input type="text" name="q" value="{{ request('q') }}" placeholder="Search tasks, projects..."
-                        class="bg-transparent text-sm text-gray-600 outline-none ring-0 border-0 w-full placeholder-gray-400">
+                        class="bg-transparent text-sm text-gray-600 outline-none ring-0 border-0 focus:ring-0 focus:outline-none focus:border-0 focus:shadow-none w-full placeholder-gray-400">
                 </div>
             </form>
 
@@ -321,10 +321,7 @@
                 <div class="w-px h-4 bg-gray-200"></div>
                     <div class="flex items-center gap-1.5"
                          @date-picker-ok.window="if (editOpen) { editTask.due_date = $event.detail.date || ''; syncTask(); }">
-                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                    <x-date-picker />
+                        <x-date-picker icon />
                 </div>
                 <div class="flex-1"></div>
                 <div class="relative" x-data="{ flagOpen: false }" @click.outside="flagOpen = false">
@@ -619,10 +616,7 @@
                 </button>
                 <div class="w-px h-4 bg-gray-200"></div>
                 <div class="flex items-center gap-1.5">
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                    <x-date-picker />
+                    <x-date-picker icon />
                 </div>
                 <div class="flex-1"></div>
                 <div class="relative" x-data="{ flagOpen: false }" @click.outside="flagOpen = false">

@@ -70,9 +70,15 @@ class TaskController extends Controller
         }
 
         if ($task->project_id) {
+            if ($request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json($task);
+            }
             return redirect()->route('projects.show', $task->project_id);
         }
 
+        if ($request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json($task);
+        }
         return redirect()->route('dashboard');
     }
 

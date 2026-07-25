@@ -32,4 +32,9 @@ class Project extends Model
     {
         return $this->hasMany(Sprint::class);
     }
+
+    public function sections(): HasMany
+    {
+        return $this->hasMany(Section::class);
+    }
 }

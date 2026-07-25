@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Task extends Model
 {
     protected $fillable = [
-        "user_id","project_id","sprint_id","title","description","is_recurring","priority","importance","status", "due_date", "position"
+        "user_id","project_id","sprint_id","section_id","title","description","is_recurring","priority","importance","status", "due_date", "position"
     ];
 
     protected function casts(): array
@@ -56,6 +56,11 @@ class Task extends Model
     public function sprint(): BelongsTo
     {
         return $this->belongsTo(Sprint::class);
+    }
+
+    public function section(): BelongsTo
+    {
+        return $this->belongsTo(Section::class);
     }
 
     public function isUrgent(): bool

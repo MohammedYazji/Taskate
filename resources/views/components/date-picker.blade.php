@@ -1,4 +1,4 @@
-@props(['taskId' => null])
+@props(['taskId' => null, 'icon' => false, 'label' => 'Due Date'])
 
 <div x-data="{
         open: false,
@@ -132,8 +132,19 @@
     class="relative inline-block">
 
     <button @click="open = !open"
-        class="w-full text-center text-xs font-medium border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-brand-500 text-gray-700 hover:border-brand-400 transition">
-        <span x-text="formattedDisplay || 'Set date'"></span>
+        @if($icon)
+        class="flex items-center gap-1.5 p-1.5 text-gray-400 hover:text-gray-600 rounded-lg transition"
+        @else
+        class="w-full text-center text-xs font-medium border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-brand-500 text-gray-700 hover:border-brand-400 transition"
+        @endif>
+        @if($icon)
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <span class="text-xs" x-text="formattedDisplay || '{{ $label }}'"></span>
+        @else
+            <span x-text="formattedDisplay || 'Set date'"></span>
+        @endif
     </button>
 
     <div x-show="open" x-cloak

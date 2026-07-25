@@ -51,6 +51,7 @@
         <input type="hidden" name="priority" x-model="newPriority">
         <input type="hidden" name="due_date" x-model="newDate">
         <input type="hidden" name="is_recurring" value="0">
+        <input type="hidden" name="section_id" x-model="newSectionId">
         @endif
     </div>
 

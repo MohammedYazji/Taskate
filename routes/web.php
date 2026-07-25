@@ -10,6 +10,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FolderController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SmartViewController;
 use App\Http\Controllers\SprintController;
 use App\Http\Controllers\SubtaskController;
@@ -69,6 +70,15 @@ Route::middleware('auth')->group(function () {
     Route::patch('/folders/{folder}', [FolderController::class, 'update'])->name('folders.update');
     Route::patch('/folders/{folder}/pin', [FolderController::class, 'pin'])->name('folders.pin');
     Route::delete('/folders/{folder}', [FolderController::class, 'destroy'])->name('folders.destroy');
+
+    // Section Routes
+    Route::post('/projects/{project}/sections', [SectionController::class, 'store'])->name('sections.store');
+    Route::post('/sections/{section}/above', [SectionController::class, 'storeAbove'])->name('sections.storeAbove');
+    Route::post('/sections/{section}/below', [SectionController::class, 'storeBelow'])->name('sections.storeBelow');
+    Route::patch('/sections/{section}', [SectionController::class, 'update'])->name('sections.update');
+    Route::delete('/sections/{section}', [SectionController::class, 'destroy'])->name('sections.destroy');
+    Route::patch('/sections/{section}/move', [SectionController::class, 'move'])->name('sections.move');
+    Route::patch('/sections/reorder', [SectionController::class, 'reorder'])->name('sections.reorder');
 
     // Tag Resources
     Route::resource('tags', TagController::class)

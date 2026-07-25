@@ -112,7 +112,14 @@
     </div>
 
     {{-- Context Panel --}}
-    <div class="w-64 bg-white flex flex-col h-screen flex-shrink-0 border-r border-gray-200">
+    <div x-show="$store.sidebar.open" x-cloak
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 -translate-x-4"
+         x-transition:enter-end="opacity-100 translate-x-0"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 translate-x-0"
+         x-transition:leave-end="opacity-0 -translate-x-4"
+         class="w-64 bg-white flex flex-col h-screen flex-shrink-0 border-r border-gray-200">
 
         {{-- Scrollable Content --}}
         <div class="flex-1 overflow-y-auto px-2 pb-4 space-y-4 pt-4">

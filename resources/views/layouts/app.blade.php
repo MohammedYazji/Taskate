@@ -7,6 +7,14 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('logo.svg') }}">
     <title>Taskate</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('sidebar', {
+                open: true,
+                toggle() { this.open = !this.open; }
+            });
+        });
+    </script>
     @stack('scripts')
 </head>
 <body class="bg-gray-50 h-screen flex overflow-hidden">

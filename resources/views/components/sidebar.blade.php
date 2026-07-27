@@ -96,6 +96,10 @@
                 class="w-10 h-10 rounded-xl flex items-center justify-center transition {{ request()->routeIs('pomodoro*') ? 'bg-brand-50 text-brand-600' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-200/60' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </a>
+            <a href="{{ route('habits.index') }}" title="Habits"
+                class="w-10 h-10 rounded-xl flex items-center justify-center transition {{ request()->routeIs('habits*') ? 'bg-brand-50 text-brand-600' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-200/60' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </a>
         </nav>
 
         <div class="flex flex-col items-center gap-1 px-2">
@@ -112,6 +116,7 @@
     </div>
 
     {{-- Context Panel --}}
+    @unless(request()->routeIs('habits*'))
     <div x-show="$store.sidebar.open" x-cloak
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 -translate-x-4"
@@ -372,6 +377,7 @@
             </div>
         </div>
     </div>
+    @endunless
 
 </aside>
 

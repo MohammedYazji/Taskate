@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AiTaskController;
+use App\Http\Controllers\HabitController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\EisenhowerController;
@@ -120,6 +121,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/ai/generate', [AiTaskController::class, 'showForm'])->name('ai.form');
     Route::post('/ai/generate', [AiTaskController::class, 'generate'])->name('ai.generate');
     Route::post('/ai/approve', [AiTaskController::class, 'approve'])->name('ai.approve');
+
+    // Habit Tracker
+    Route::get('/habits', [HabitController::class, 'index'])->name('habits.index');
+    Route::post('/habits', [HabitController::class, 'store'])->name('habits.store');
+    Route::patch('/habits/{habit}', [HabitController::class, 'update'])->name('habits.update');
+    Route::delete('/habits/{habit}', [HabitController::class, 'destroy'])->name('habits.destroy');
+    Route::patch('/habits/{habit}/toggle', [HabitController::class, 'toggle'])->name('habits.toggle');
+    Route::patch('/habits/{habit}/archive', [HabitController::class, 'archive'])->name('habits.archive');
+    Route::get('/habits/{habit}/stats', [HabitController::class, 'stats'])->name('habits.stats');
 });
 
 require __DIR__.'/auth.php';

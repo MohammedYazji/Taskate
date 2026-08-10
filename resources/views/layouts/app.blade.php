@@ -15,8 +15,7 @@
             });
         });
     </script>
-    @stack('scripts')
-</head>
+    </head>
 <body class="bg-gray-50 h-screen flex overflow-hidden">
 
     <x-sidebar />
@@ -27,5 +26,6 @@
         </main>
     </div>
 
+    @stack('scripts')
 </body>
 </html>

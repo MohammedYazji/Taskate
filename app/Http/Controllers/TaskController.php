@@ -96,6 +96,10 @@ class TaskController extends Controller
         $allowedTagIds = array_intersect($request->tag_ids ?? [], $userTagIds);
         $this->tagRepository->syncTaskTags($task, $allowedTagIds);
 
+        if ($request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json($task->fresh(['tags', 'section']));
+        }
+
         return redirect()->route('dashboard');
     }
 

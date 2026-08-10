@@ -18,7 +18,7 @@ class UpdateTaskRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => 'required|string|min:3|max:255',
+            'title' => 'nullable|string|min:3|max:255',
             'description' => 'nullable|string',
             'is_recurring' => 'boolean|nullable',
             'priority' => [new Enum(Priority::class)],

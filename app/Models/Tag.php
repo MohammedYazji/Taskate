@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Tag extends Model
 {
     protected $fillable = [
-        'name', 'user_id', 'color'
+        'name', 'user_id', 'color', 'icon', 'parent_id'
     ];
 
 
@@ -21,5 +21,15 @@ class Tag extends Model
     public function tasks(): BelongsToMany
     {
         return $this->belongsToMany(Task::class, 'task_tag');
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Tag::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Tag::class, 'parent_id');
     }
 }

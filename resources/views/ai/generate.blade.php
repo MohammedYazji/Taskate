@@ -8,7 +8,7 @@
         <div class="bg-white rounded-xl border border-gray-200 p-6">
             <form method="POST" action="{{ route('ai.generate') }}">
                 @csrf
-                <div class="mb-6">
+                <div class="mb-5">
                     <label for="topic" class="block text-sm font-medium text-gray-700 mb-2">Topic / Project</label>
                     <textarea
                         id="topic"
@@ -18,11 +18,23 @@
                         minlength="5"
                         maxlength="500"
                         class="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
-                        placeholder="e.g., Build a REST API for an e-commerce platform with user authentication, product management, and order processing...">{{ old('topic') }}
-                    </textarea>
+                        placeholder="e.g., Build a REST API for an e-commerce platform with user authentication, product management, and order processing...">{{ old('topic') }}</textarea>
                     @error('topic')
                         <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                     @enderror
+                </div>
+
+                <div class="mb-6">
+                    <label for="folder_id" class="block text-sm font-medium text-gray-700 mb-2">Folder <span class="text-gray-400 font-normal">(optional)</span></label>
+                    <select name="folder_id" id="folder_id"
+                        class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white">
+                        <option value="">No folder</option>
+                        @foreach($folders as $folder)
+                            <option value="{{ $folder->id }}" {{ old('folder_id') == $folder->id ? 'selected' : '' }}>
+                                {{ $folder->name }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <button type="submit"

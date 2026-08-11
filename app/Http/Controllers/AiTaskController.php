@@ -2,53 +2,79 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AiGeneration;
 use App\Models\Project;
 use App\Models\Task;
-use App\Services\GeminiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AiTaskController extends Controller
 {
-    public function __construct(
-        protected GeminiService $geminiService
-    ) {}
-
     public function showForm()
     {
-        return view('ai.generate');
+        $folders = \App\Models\Folder::where('user_id', Auth::id())->orderBy('name')->get();
+
+        return view('ai.generate', compact('folders'));
     }
 
     public function generate(Request $request)
     {
         $request->validate([
             'topic' => 'required|string|min:5|max:500',
+            'folder_id' => 'nullable|integer|exists:folders,id',
+        ]);
+
+        $generation = AiGeneration::create([
+            'user_id' => Auth::id(),
+            'topic' => $request->topic,
+            'folder_id' => $request->folder_id,
+            'status' => 'processing',
         ]);
 
         try {
-            $result = $this->geminiService->breakTopicIntoTasks($request->topic);
+            $gemini = app(\App\Services\GeminiService::class);
+            $result = $gemini->breakTopicIntoTasks($request->topic);
 
-            session(['ai_generated_tasks' => $result['tasks'], 'ai_topic' => $request->topic]);
-
-            return view('ai.review', [
-                'tasks' => $result['tasks'],
-                'projectName' => $result['project_name'],
-                'topic' => $request->topic,
+            $generation->update([
+                'status' => 'completed',
+                'result' => $result,
             ]);
         } catch (\Exception $e) {
-            return back()->withErrors(['topic' => 'Failed to generate tasks: ' . $e->getMessage()])->withInput();
+            $generation->update([
+                'status' => 'failed',
+                'error' => $e->getMessage(),
+            ]);
         }
+
+        return redirect()->route('ai.status', $generation);
+    }
+
+    public function status(AiGeneration $generation)
+    {
+        if ($generation->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $generation->refresh();
+
+        if ($generation->status === 'completed') {
+            return view('ai.review', [
+                'sections' => $generation->result['sections'] ?? [],
+                'projectName' => $generation->result['project_name'] ?? '',
+                'topic' => $generation->topic,
+                'folderId' => $generation->folder_id,
+                'folders' => \App\Models\Folder::where('user_id', Auth::id())->orderBy('name')->get(),
+            ]);
+        }
+
+        return view('ai.status', compact('generation'));
     }
 
     public function approve(Request $request)
     {
         $request->validate([
             'project_name' => 'required|string|max:255',
-            'tasks' => 'required|array',
-            'tasks.*.title' => 'required|string',
-            'tasks.*.description' => 'nullable|string',
-            'tasks.*.priority' => 'required|in:low,medium,high',
-            'tasks.*.approved' => 'nullable|boolean',
+            'folder_id' => 'nullable|integer|exists:folders,id',
         ]);
 
         $user = Auth::id();
@@ -58,27 +84,47 @@ class AiTaskController extends Controller
             'user_id' => $user,
             'name' => $request->project_name,
             'color' => '#7c3aed',
+            'folder_id' => $request->folder_id,
         ]);
 
-        foreach ($request->tasks as $taskData) {
-            if (empty($taskData['approved'])) {
-                continue;
-            }
+        $position = 0;
+        foreach ($request->input('sections', []) as $sectionIndex => $sectionData) {
+            if (empty($sectionData['approved'])) continue;
 
-            Task::create([
-                'user_id' => $user,
+            $section = \App\Models\Section::create([
                 'project_id' => $project->id,
-                'title' => $taskData['title'],
-                'description' => $taskData['description'] ?? null,
-                'priority' => $taskData['priority'],
-                'status' => 'todo',
+                'name' => $sectionData['name'],
+                'position' => $position++,
             ]);
 
-            $created++;
+            foreach ($sectionData['tasks'] ?? [] as $taskIndex => $taskData) {
+                if (empty($taskData['approved'])) continue;
+
+                $task = Task::create([
+                    'user_id' => $user,
+                    'project_id' => $project->id,
+                    'section_id' => $section->id,
+                    'title' => $taskData['title'],
+                    'description' => !empty($taskData['description']) ? \Illuminate\Support\Str::markdown($taskData['description']) : '',
+                    'priority' => $taskData['priority'] ?? 'medium',
+                    'due_date' => !empty($taskData['due_date']) ? $taskData['due_date'] : null,
+                    'position' => $position++,
+                ]);
+
+                if (!empty($taskData['subtasks'])) {
+                    foreach ($taskData['subtasks'] as $subIndex => $subData) {
+                        if (empty($subData['approved'])) continue;
+                        $task->subtasks()->create([
+                            'title' => $subData['title'],
+                            'is_completed' => false,
+                        ]);
+                    }
+                }
+
+                $created++;
+            }
         }
 
-        session()->forget(['ai_generated_tasks', 'ai_topic']);
-
-        return redirect()->route('projects.board', $project)->with('success', "Created project '{$project->name}' with {$created} task" . ($created !== 1 ? 's' : ''));
+        return redirect()->route('projects.show', $project)->with('success', "Created project '{$project->name}' with {$created} task" . ($created !== 1 ? 's' : ''));
     }
 }

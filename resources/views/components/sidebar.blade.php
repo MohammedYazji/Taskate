@@ -7,6 +7,10 @@
     listMenuOpen: null,
     folderMenuOpen: null,
     folderOpen: {},
+    tagModalOpen: false,
+    tagModalMode: 'add',
+    tagForm: { id: null, name: '', color: '#14B8A6', icon: '', parent_id: null },
+    tagMenuOpen: null,
     renameModalOpen: false,
     renameFolderId: null,
     renameFolderName: '',
@@ -14,6 +18,34 @@
     showNewFolder: false,
     folderModalOpen: false,
     folderModalName: '',
+    initSortable() {
+        this.$nextTick(() => {
+            document.querySelectorAll('.sortable-folder, .sortable-root').forEach(el => {
+                if (el._sortable) return;
+                el._sortable = new Sortable(el, {
+                    group: 'sidebar-lists',
+                    animation: 150,
+                    ghostClass: 'opacity-30',
+                    dragClass: 'shadow-lg',
+                    draggable: '.sortable-item',
+                    handle: '.drag-handle',
+                    onEnd: function(evt) {
+                        const itemId = evt.item.dataset.id;
+                        const toFolderId = evt.to.dataset.folderId || null;
+                        fetch('/projects/' + itemId, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                            body: JSON.stringify({ folder_id: toFolderId }),
+                        }).then(() => location.reload());
+                    }
+                });
+            });
+        });
+    },
     colors: ['#14B8A6','#3B82F6','#8B5CF6','#EF4444','#F59E0B','#EC4899','#6366F1','#10B981','#F97316','#06B6D4'],
     openAddList(folderId) {
         this.listModalMode = 'add';
@@ -59,7 +91,7 @@
         if (!confirm('Delete this folder? Lists will be moved to ungrouped.')) return;
         fetch('/folders/' + id, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' } }).then(() => location.reload());
     }
-}" class="flex-shrink-0 h-screen" x-init="$nextTick(() => {
+}" class="flex-shrink-0 h-screen" x-init="initSortable(); $nextTick(() => {
     const saved = sessionStorage.getItem('restoreListModal');
     if (saved) {
         sessionStorage.removeItem('restoreListModal');
@@ -99,6 +131,10 @@
             <a href="{{ route('habits.index') }}" title="Habits"
                 class="w-10 h-10 rounded-xl flex items-center justify-center transition {{ request()->routeIs('habits*') ? 'bg-brand-50 text-brand-600' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-200/60' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </a>
+            <a href="{{ route('ai.form') }}" title="AI Generate"
+                class="w-10 h-10 rounded-xl flex items-center justify-center transition {{ request()->routeIs('ai.*') ? 'bg-brand-50 text-brand-600' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-200/60' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z"/></svg>
             </a>
         </nav>
 
@@ -212,7 +248,10 @@
                     <div x-show="folderOpen[{{ $folder->id }}] !== false" x-transition>
                     <div class="sortable-folder" data-folder-id="{{ $folder->id }}">
                     @foreach($folderProjects as $project)
-                    <div class="group relative flex items-center gap-2 pl-6 pr-3 py-1.5 rounded-lg transition sortable-item {{ request()->routeIs('projects.show', $project) ? 'text-gray-900 font-medium' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' }}" data-id="{{ $project->id }}">
+                    <div class="group relative flex items-center gap-1 pl-3 pr-3 py-1.5 rounded-lg transition sortable-item {{ request()->routeIs('projects.show', $project) ? 'text-gray-900 font-medium' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' }}" data-id="{{ $project->id }}">
+                        <span class="drag-handle opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing flex-shrink-0 p-0.5 rounded text-gray-300 hover:text-gray-500 transition">
+                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>
+                        </span>
                         <a href="{{ route('projects.show', $project) }}" class="flex items-center gap-2 flex-1 min-w-0">
                             <span class="text-sm flex-shrink-0">{{ $project->icon ?? '👋' }}</span>
                             <span class="flex-1 text-sm truncate">{{ $project->name }}</span>
@@ -245,7 +284,7 @@
                                     Duplicate
                                 </button>
                                 <div class="border-t border-gray-100 my-0.5"></div>
-                                <button @click="if(confirm('Delete this list?')) { fetch('/projects/{{ $project->id }}', { method: 'DELETE', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' } }).then(() => location.reload()) }"
+                                <button @click="if(confirm('Delete this list?')) { fetch('/projects/{{ $project->id }}', { method: 'DELETE', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' } }).then(() => { if (window.location.pathname === '/projects/{{ $project->id }}') window.location.href = '/dashboard'; else location.reload(); }) }"
                                     class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-500 hover:bg-red-50 transition">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     Delete
@@ -263,7 +302,10 @@
                 {{-- Ungrouped lists --}}
                 <div class="sortable-root" id="sidebar-ungrouped">
                 @foreach($projects->whereNull('folder_id') ?? [] as $project)
-                <div class="group relative flex items-center gap-2 px-3 py-2 rounded-lg transition sortable-item {{ request()->routeIs('projects.show', $project) ? 'text-gray-900 font-medium' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' }}" data-id="{{ $project->id }}">
+                <div class="group relative flex items-center gap-1 px-3 py-2 rounded-lg transition sortable-item {{ request()->routeIs('projects.show', $project) ? 'text-gray-900 font-medium' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50' }}" data-id="{{ $project->id }}">
+                    <span class="drag-handle opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing flex-shrink-0 p-0.5 rounded text-gray-300 hover:text-gray-500 transition">
+                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>
+                    </span>
                     <a href="{{ route('projects.show', $project) }}" class="flex items-center gap-2 flex-1 min-w-0">
                         <span class="text-sm flex-shrink-0">{{ $project->icon ?? '👋' }}</span>
                         <span class="flex-1 text-sm truncate">{{ $project->name }}</span>
@@ -296,9 +338,9 @@
                                 Duplicate
                             </button>
                             <div class="border-t border-gray-100 my-0.5"></div>
-                            <button @click="if(confirm('Delete this list?')) { fetch('/projects/{{ $project->id }}', { method: 'DELETE', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' } }).then(() => location.reload()) }"
+                            <button @click="if(confirm('Delete this list?')) { fetch('/projects/{{ $project->id }}', { method: 'DELETE', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' } }).then(() => { if (window.location.pathname === '/projects/{{ $project->id }}') window.location.href = '/dashboard'; else location.reload(); }) }"
                                 class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-500 hover:bg-red-50 transition">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 0 00-1 1v3M4 7h16"/></svg>
                                 Delete
                             </button>
                         </div>
@@ -317,13 +359,46 @@
             <div>
                 <div class="flex items-center justify-between px-3 mb-1">
                     <h3 class="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Tags</h3>
-                    <span class="text-[10px] text-gray-400">{{ count($tags) }}</span>
+                    <div class="flex items-center gap-1">
+                        <span class="text-[10px] text-gray-400">{{ count($tags) }}</span>
+                        <button @click="tagModalOpen = true; tagModalMode = 'add'; tagForm = { id: null, name: '', color: '#14B8A6', icon: '', parent_id: null }"
+                            class="w-4 h-4 rounded flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition" title="Add Tag">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        </button>
+                    </div>
                 </div>
                 @foreach($tags as $tag)
-                <a href="{{ route('tags.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition text-gray-600 hover:text-gray-900 hover:bg-gray-50">
-                    <div class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {{ $tag->color }}"></div>
-                    <span class="flex-1 text-sm truncate">{{ $tag->name }}</span>
-                </a>
+                <div class="group relative flex items-center gap-3 px-3 py-2 rounded-lg transition text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                    <span class="flex-1 text-sm truncate">{{ $tag->icon ?: '🏷️' }} {{ $tag->name }}</span>
+                    <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {{ $tag->color }}"></span>
+                    <div class="relative opacity-0 group-hover:opacity-100 transition" @click.outside="tagMenuOpen = null">
+                        <button @click.stop="tagMenuOpen = tagMenuOpen === {{ $tag->id }} ? null : {{ $tag->id }}"
+                            class="p-0.5 rounded transition text-gray-400 hover:text-gray-600 hover:bg-gray-100">
+                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                        </button>
+                        <div x-cloak x-show="tagMenuOpen === {{ $tag->id }}"
+                            x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                            class="absolute top-full right-0 mt-1 w-40 bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1">
+                            <button @click="tagModalOpen = true; tagModalMode = 'edit'; tagForm = { id: {{ $tag->id }}, name: '{{ addslashes($tag->name) }}', color: '{{ $tag->color }}', icon: '{{ addslashes($tag->icon ?? '') }}', parent_id: {{ $tag->parent_id ?? 'null' }} }; tagMenuOpen = null"
+                                class="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                Edit
+                            </button>
+                            <button @click="tagModalOpen = true; tagModalMode = 'add'; tagForm = { id: null, name: '', color: '#14B8A6', icon: '', parent_id: {{ $tag->id }} }; tagMenuOpen = null"
+                                class="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                Add subtag
+                            </button>
+                            <div class="border-t border-gray-100 my-0.5"></div>
+                            <button @click="if(confirm('Delete this tag?')) { fetch('/tags/{{ $tag->id }}', { method: 'DELETE', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' } }).then(() => location.reload()) }"
+                                class="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-500 hover:bg-red-50 transition">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 @endforeach
             </div>
             @endif
@@ -331,13 +406,13 @@
 
         {{-- Pinned Bottom --}}
         <div class="px-2 pb-2 space-y-0.5 flex-shrink-0 border-t border-gray-100 pt-2">
-            <div class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 text-sm">
+            <a href="/completed" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 text-sm hover:bg-gray-50 hover:text-gray-600 transition">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <span class="flex-1">Completed</span>
                 @if(($completedTasks ?? 0) > 0)
                 <span class="text-[10px]">{{ $completedTasks }}</span>
                 @endif
-            </div>
+            </a>
             <div x-data="{ userMenuOpen: false }" class="relative">
                 <button @click="userMenuOpen = !userMenuOpen" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition cursor-pointer text-left">
                     <div class="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
@@ -380,6 +455,83 @@
     @endunless
 
 </aside>
+
+{{-- ==================== TAG MODAL ==================== --}}
+<div x-show="tagModalOpen" x-cloak
+    class="fixed inset-0 z-[100] flex items-center justify-center"
+    x-transition:enter="transition ease-out duration-200"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-150"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0">
+    <div class="absolute inset-0 bg-black/40" @click="tagModalOpen = false"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+        x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+        x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+        @click.outside="tagModalOpen = false">
+        <div class="px-6 pt-6 pb-4">
+            <h3 class="text-lg font-semibold text-gray-900 text-center" x-text="tagModalMode === 'add' ? 'Add Tag' : 'Edit Tag'"></h3>
+        </div>
+        <div class="px-6 pb-6 space-y-5">
+            {{-- Name --}}
+            <div>
+                <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Name</label>
+                <input type="text" x-model="tagForm.name" placeholder="Tag name..."
+                    class="w-full mt-1.5 text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent placeholder-gray-300">
+            </div>
+            {{-- Icon --}}
+            <div>
+                <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Icon</label>
+                <input type="text" x-model="tagForm.icon" placeholder="Emoji icon..."
+                    class="w-full mt-1.5 text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent placeholder-gray-300">
+            </div>
+            {{-- Color --}}
+            <div>
+                <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Color</label>
+                <div class="flex gap-2 mt-1.5">
+                    <template x-for="c in ['#14B8A6','#3B82F6','#8B5CF6','#EF4444','#F59E0B','#EC4899','#6366F1','#10B981','#F97316','#06B6D4','#64748B','#84CC16']" :key="c">
+                        <button type="button" @click="tagForm.color = c"
+                            class="w-7 h-7 rounded-full border-2 transition"
+                            :class="tagForm.color === c ? 'border-gray-900 scale-110' : 'border-transparent'"
+                            :style="'background-color:' + c"></button>
+                    </template>
+                </div>
+            </div>
+            {{-- Parent Tag --}}
+            <div>
+                <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Parent Tag</label>
+                <select x-model="tagForm.parent_id"
+                    class="w-full mt-1.5 text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-brand-500 text-gray-700">
+                    <option :value="null">None</option>
+                    @foreach($tags as $tag)
+                    <option value="{{ $tag->id }}">{{ $tag->icon ? $tag->icon . ' ' : '' }}{{ $tag->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            {{-- Actions --}}
+            <div class="flex gap-3 pt-2">
+                <button @click="tagModalOpen = false" type="button"
+                    class="flex-1 text-sm font-medium py-2.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition">Cancel</button>
+                <button @click="(() => {
+                    const url = tagModalMode === 'add' ? '/tags' : '/tags/' + tagForm.id;
+                    const method = tagModalMode === 'add' ? 'POST' : 'PATCH';
+                    fetch(url, {
+                        method, headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' },
+                        body: JSON.stringify({ name: tagForm.name, color: tagForm.color, icon: tagForm.icon || null, parent_id: tagForm.parent_id || null })
+                    }).then(() => location.reload());
+                })()" type="button"
+                    class="flex-1 text-sm font-medium py-2.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white transition">
+                    <span x-text="tagModalMode === 'add' ? 'Create Tag' : 'Save Changes'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 {{-- ==================== ADD/EDIT LIST MODAL ==================== --}}
     <div x-show="listModalOpen" x-cloak
@@ -584,33 +736,4 @@
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const containers = document.querySelectorAll('.sortable-folder, .sortable-root');
-    containers.forEach(function(el) {
-        new Sortable(el, {
-            group: 'sidebar-lists',
-            animation: 150,
-            ghostClass: 'opacity-30',
-            dragClass: 'shadow-lg',
-            draggable: '.sortable-item',
-            onEnd: function(evt) {
-                const itemId = evt.item.dataset.id;
-                const toContainer = evt.to;
-                const toFolderId = toContainer.dataset.folderId || null;
-
-                fetch('/projects/' + itemId, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-                        'X-Requested-With': 'XMLHttpRequest',
-                    },
-                    body: JSON.stringify({ folder_id: toFolderId }),
-                }).then(() => location.reload());
-            }
-        });
-    });
-});
-</script>
 @endpush

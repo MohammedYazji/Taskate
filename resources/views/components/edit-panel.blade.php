@@ -17,11 +17,12 @@
     x-transition:leave="transition ease-in duration-200"
     x-transition:leave-start="translate-x-0"
     x-transition:leave-end="translate-x-full"
-    x-data="{ menuOpen: false, commentsOpen: false, saveTagTimer: null }">
+    x-data="{ menuOpen: false, commentsOpen: false, saveTagTimer: null }"
+    x-effect="if (editOpen && editTask.id) { $nextTick(() => { $dispatch('date-picker-set', { date: editTask.due_date || null }) }) }">
 
     <div class="flex items-center gap-3 px-6 py-3 border-b border-gray-200 flex-shrink-0">
         <button @click="
-            editTask.status = editTask.status === 'done' ? 'todo' : 'done';
+            editTask.status = (editTask.status === 'done' || editTask.status === 'wont_do') ? 'todo' : 'done';
             fetch('/tasks/' + editTask.id, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' },
@@ -90,7 +91,7 @@
                  html: '',
                  editor: null,
                  saveTimer: null,
-                 save() {
+                 saveDescription(content) {
                      clearTimeout(this.saveTimer)
                      this.saveTimer = setTimeout(() => {
                          fetch('/tasks/' + editTask.id + '/description', {
@@ -100,9 +101,9 @@
                                  'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
                                  'X-Requested-With': 'XMLHttpRequest',
                              },
-                             body: JSON.stringify({ description: this.html }),
+                             body: JSON.stringify({ description: content }),
                          })
-                     }, 500)
+                     }, 300)
                  }
              }"
              x-effect="if (editOpen && editTask.id) {
@@ -118,15 +119,100 @@
                          editor = initTaskEditor($refs.descEditor, {
                              content: editTask.description || '',
                              placeholder: 'Start writing...',
-                             onUpdate: (val) => { html = val; this.save() },
+                             onUpdate: (val) => {
+                                 html = val;
+                                 editTask.description = val;
+                                 syncTask();
+                                 clearTimeout(saveTimer);
+                                 saveTimer = setTimeout(() => {
+                                     if (editTask.id) {
+                                         fetch('/tasks/' + editTask.id + '/description', {
+                                             method: 'PATCH',
+                                             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' },
+                                             body: JSON.stringify({ description: val }),
+                                         });
+                                     }
+                                 }, 500);
+                             },
                          })
                      })
-                 } else if (!open && editor) {
-                     editor.destroy();
-                     editor = null;
+                 } else if (!open) {
+                     if (editor) {
+                         const desc = editor.getHTML();
+                         editor.destroy();
+                         editor = null;
+                         clearTimeout(saveTimer)
+                         const xhr = new XMLHttpRequest();
+                         xhr.open('PATCH', '/tasks/' + editTask.id + '/description', false);
+                         xhr.setRequestHeader('Content-Type', 'application/json');
+                         xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name=csrf-token]').content);
+                         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                         xhr.send(JSON.stringify({ description: desc }));
+                     }
                  }
              })">
             <div x-ref="descEditor" class="task-editor-area min-h-[200px] text-sm leading-relaxed text-gray-800 outline-none"></div>
+        </div>
+
+        {{-- Subtasks --}}
+        <div class="px-6 py-4 border-t border-gray-200"
+             x-data="{
+                 newSubtask: '',
+                 addSubtask() {
+                     if (!this.newSubtask.trim()) return;
+                     fetch('/tasks/' + editTask.id + '/subtasks', {
+                         method: 'POST',
+                         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' },
+                         body: JSON.stringify({ title: this.newSubtask.trim() }),
+                     }).then(r => r.json()).then(st => {
+                         editTask.subtasks.push({ id: st.id, title: st.title, is_completed: false });
+                         this.newSubtask = '';
+                     });
+                 },
+                 toggleSubtask(subtask) {
+                     fetch('/subtasks/' + subtask.id + '/toggle', {
+                         method: 'PATCH',
+                         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' },
+                     }).then(() => { subtask.is_completed = !subtask.is_completed; });
+                 },
+                 deleteSubtask(subtask) {
+                     fetch('/subtasks/' + subtask.id, {
+                         method: 'DELETE',
+                         headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' },
+                     }).then(() => { editTask.subtasks = editTask.subtasks.filter(s => s.id !== subtask.id); });
+                 }
+             }">
+            <div class="flex items-center justify-between mb-2">
+                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    Subtasks
+                    <span x-show="editTask.subtasks.length > 0" class="text-gray-400 font-normal"
+                        x-text="`(${editTask.subtasks.filter(s => s.is_completed).length}/${editTask.subtasks.length})`"></span>
+                </h4>
+            </div>
+            <div class="space-y-1 mb-3">
+                <template x-for="subtask in editTask.subtasks" :key="subtask.id">
+                    <div class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition group">
+                        <button @click="toggleSubtask(subtask)"
+                            class="w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition"
+                            :class="subtask.is_completed ? 'bg-brand-500 border-brand-500' : 'border-gray-300 hover:border-brand-400'">
+                            <svg x-show="subtask.is_completed" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </button>
+                        <span class="flex-1 text-sm" x-text="subtask.title"
+                            :class="subtask.is_completed ? 'line-through text-gray-400' : 'text-gray-700'"></span>
+                        <button @click="deleteSubtask(subtask)"
+                            class="p-0.5 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                </template>
+            </div>
+            <div class="flex gap-2">
+                <input type="text" x-model="newSubtask" @keydown.enter="addSubtask()" placeholder="Add subtask..."
+                    class="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+                <button @click="addSubtask()" class="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition">Add</button>
+            </div>
         </div>
 
         {{-- Comments --}}

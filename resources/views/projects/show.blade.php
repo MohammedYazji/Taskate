@@ -8,6 +8,7 @@
         newTitle: '',
         newPriority: 'medium',
         newDate: '',
+        taskMenuId: null,
         newSectionId: @js($sections->first()?->id),
         sectionNames: @js($sections->pluck('name', 'id')->toArray()),
         sections: {
@@ -21,6 +22,53 @@
         },
         sortOpen: false,
         menuOpen: false,
+        groupBy: 'section',
+        sortBy: 'manual',
+        hideCompleted: false,
+        get filteredTasks() {
+            let tasks = this.tasksData;
+            if (this.hideCompleted) tasks = tasks.filter(t => t.status !== 'done' && t.status !== 'wont_do');
+            if (this.sortBy === 'priority') {
+                const order = { high: 0, medium: 1, low: 2 };
+                tasks = [...tasks].sort((a, b) => (order[a.priority] ?? 3) - (order[b.priority] ?? 3));
+            } else if (this.sortBy === 'date') {
+                tasks = [...tasks].sort((a, b) => {
+                    if (!a.due_date && !b.due_date) return 0;
+                    if (!a.due_date) return 1;
+                    if (!b.due_date) return -1;
+                    return a.due_date.localeCompare(b.due_date);
+                });
+            } else if (this.sortBy === 'alpha') {
+                tasks = [...tasks].sort((a, b) => a.title.localeCompare(b.title));
+            }
+            return tasks;
+        },
+        get taskGroups() {
+            const tasks = this.filteredTasks;
+            if (this.groupBy === 'section') return null;
+            if (this.groupBy === 'none') return [{ key: null, label: null, tasks }];
+            const keyFn = this.groupBy === 'status'
+                ? (t) => t.status
+                : (t) => t.priority || 'none';
+            const labels = {
+                status: { todo: 'To Do', in_progress: 'In Progress', done: 'Done', wont_do: `Won't Do` },
+                priority: { high: 'High', medium: 'Medium', low: 'Low', none: 'No Priority' },
+            };
+            const order = this.groupBy === 'status'
+                ? ['todo', 'in_progress', 'done', 'wont_do']
+                : ['high', 'medium', 'low', 'none'];
+            const groups = {};
+            for (const t of tasks) {
+                const key = keyFn(t);
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(t);
+            }
+            return order.filter(k => groups[k]).map(k => ({
+                key: k,
+                label: (labels[this.groupBy] || {})[k] || k,
+                tasks: groups[k],
+            }));
+        },
         addingSection: false,
         newSectionName: '',
         editingSectionId: null,
@@ -159,12 +207,12 @@
             .then(() => window.location.reload());
         },
         sectionCount(id) {
-            return this.tasksData.filter(t => String(t.section_id) === String(id)).length;
+            return this.filteredTasks.filter(t => String(t.section_id) === String(id)).length;
         },
         toggleTask(taskId) {
             const t = this.tasksData.find(t => t.id === taskId);
             if (!t) return;
-            const newStatus = t.status === 'done' ? 'todo' : 'done';
+            const newStatus = (t.status === 'done' || t.status === 'wont_do') ? 'todo' : 'done';
             fetch('/tasks/' + taskId + '/toggle', {
                 method: 'PATCH',
                 headers: {
@@ -278,18 +326,34 @@
                         <div class="px-3 py-1.5">
                             <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Group by</span>
                         </div>
-                        <button class="w-full text-left px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 transition">None</button>
-                        <button class="w-full text-left px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 transition">Status</button>
-                        <button class="w-full text-left px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 transition">Priority</button>
-                        <button class="w-full text-left px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 transition">Section</button>
+                        <button @click="groupBy = 'none'" class="w-full flex items-center justify-between px-3 py-1.5 text-xs hover:bg-gray-50 transition" :class="groupBy === 'none' ? 'text-brand-600 font-semibold' : 'text-gray-600'">
+                            None <svg x-show="groupBy === 'none'" class="w-3 h-3 text-brand-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                        </button>
+                        <button @click="groupBy = 'status'" class="w-full flex items-center justify-between px-3 py-1.5 text-xs hover:bg-gray-50 transition" :class="groupBy === 'status' ? 'text-brand-600 font-semibold' : 'text-gray-600'">
+                            Status <svg x-show="groupBy === 'status'" class="w-3 h-3 text-brand-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                        </button>
+                        <button @click="groupBy = 'priority'" class="w-full flex items-center justify-between px-3 py-1.5 text-xs hover:bg-gray-50 transition" :class="groupBy === 'priority' ? 'text-brand-600 font-semibold' : 'text-gray-600'">
+                            Priority <svg x-show="groupBy === 'priority'" class="w-3 h-3 text-brand-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                        </button>
+                        <button @click="groupBy = 'section'" class="w-full flex items-center justify-between px-3 py-1.5 text-xs hover:bg-gray-50 transition" :class="groupBy === 'section' ? 'text-brand-600 font-semibold' : 'text-gray-600'">
+                            Section <svg x-show="groupBy === 'section'" class="w-3 h-3 text-brand-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                        </button>
                         <hr class="my-1 border-gray-100">
                         <div class="px-3 py-1.5">
                             <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Sort by</span>
                         </div>
-                        <button class="w-full text-left px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 transition">Manual</button>
-                        <button class="w-full text-left px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 transition">Priority</button>
-                        <button class="w-full text-left px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 transition">Date</button>
-                        <button class="w-full text-left px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 transition">Alphabetical</button>
+                        <button @click="sortBy = 'manual'" class="w-full flex items-center justify-between px-3 py-1.5 text-xs hover:bg-gray-50 transition" :class="sortBy === 'manual' ? 'text-brand-600 font-semibold' : 'text-gray-600'">
+                            Manual <svg x-show="sortBy === 'manual'" class="w-3 h-3 text-brand-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                        </button>
+                        <button @click="sortBy = 'priority'" class="w-full flex items-center justify-between px-3 py-1.5 text-xs hover:bg-gray-50 transition" :class="sortBy === 'priority' ? 'text-brand-600 font-semibold' : 'text-gray-600'">
+                            Priority <svg x-show="sortBy === 'priority'" class="w-3 h-3 text-brand-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                        </button>
+                        <button @click="sortBy = 'date'" class="w-full flex items-center justify-between px-3 py-1.5 text-xs hover:bg-gray-50 transition" :class="sortBy === 'date' ? 'text-brand-600 font-semibold' : 'text-gray-600'">
+                            Date <svg x-show="sortBy === 'date'" class="w-3 h-3 text-brand-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                        </button>
+                        <button @click="sortBy = 'alpha'" class="w-full flex items-center justify-between px-3 py-1.5 text-xs hover:bg-gray-50 transition" :class="sortBy === 'alpha' ? 'text-brand-600 font-semibold' : 'text-gray-600'">
+                            Alphabetical <svg x-show="sortBy === 'alpha'" class="w-3 h-3 text-brand-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                        </button>
                     </div>
                 </div>
 
@@ -329,9 +393,9 @@
                         <div class="px-3 py-1.5">
                             <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Display</span>
                         </div>
-                        <button class="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 transition">
-                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                            Hide completed
+                        <button @click="hideCompleted = !hideCompleted" class="w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-gray-50 transition" :class="hideCompleted ? 'text-brand-600 font-semibold' : 'text-gray-600'">
+                            <svg class="w-3.5 h-3.5" :class="hideCompleted ? 'text-brand-500' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <span x-text="hideCompleted ? 'Show completed' : 'Hide completed'"></span>
                         </button>
                         <button class="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 transition">
                             <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -342,7 +406,8 @@
                             View
                         </button>
                         <hr class="my-1 border-gray-100">
-                        <button class="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 transition">
+                        <button @click="if(confirm('Delete this list?')) { fetch('/projects/{{ $project->id }}', { method: 'DELETE', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'X-Requested-With': 'XMLHttpRequest' } }).then(() => window.location.href = '/dashboard') }"
+                            class="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 transition">
                             Delete project
                         </button>
                     </div>
@@ -449,6 +514,9 @@
         {{-- Task List --}}
         <div class="bg-white rounded-xl border border-gray-200">
 
+            {{-- Section view (groupBy = 'section') --}}
+            <div x-show="groupBy === 'section'">
+
             {{-- Sections --}}
             @foreach($sections as $section)
             <div class="{{ !$loop->last ? 'border-t border-gray-100' : '' }}">
@@ -523,21 +591,24 @@
                      x-transition:leave-start="opacity-100 translate-y-0"
                      x-transition:leave-end="opacity-0 -translate-y-1">
                     <div class="sortable-tasks" data-section="{{ $section->id }}">
-                    <template x-for="task in tasksData.filter(t => String(t.section_id) === String({{ $section->id }}))" :key="task.id">
+                    <template x-for="task in filteredTasks.filter(t => String(t.section_id) === String({{ $section->id }}))" :key="task.id">
                     <div class="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition group cursor-pointer border-t border-gray-50 task-row"
                          :data-id="task.id" data-section="{{ $section->id }}"
                          @click="openEdit(task.id)">
                         <button @click.stop="toggleTask(task.id)"
                             class="w-[18px] h-[18px] rounded-[5px] border-2 flex-shrink-0 flex items-center justify-center cursor-pointer transition"
-                            :class="task.status === 'done' ? 'border-transparent hover:opacity-80' : 'border-gray-300 hover:border-brand-400'"
-                            :style="task.status === 'done' ? 'background-color: {{ $project->color }}' : ''">
+                            :class="task.status === 'done' ? 'border-transparent hover:opacity-80' : task.status === 'wont_do' ? 'border-transparent hover:opacity-80' : 'border-gray-300 hover:border-brand-400'"
+                            :style="task.status === 'done' ? 'background-color: {{ $project->color }}' : task.status === 'wont_do' ? 'background-color: #9CA3AF' : ''">
                             <svg x-show="task.status === 'done'" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <svg x-show="task.status === 'wont_do'" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M18 6L6 18M6 6l12 12"/>
                             </svg>
                         </button>
                         <span x-show="task.icon" class="text-sm flex-shrink-0" x-text="task.icon"></span>
                         <span class="flex-1 text-sm"
-                            :class="task.status === 'done' ? 'line-through text-gray-400' : 'text-gray-800'"
+                            :class="(task.status === 'done' || task.status === 'wont_do') ? 'line-through text-gray-400' : 'text-gray-800'"
                             x-text="task.title"></span>
                         <span class="text-[11px] font-medium px-1.5 py-0.5 rounded border"
                             :class="{
@@ -547,20 +618,311 @@
                                 'text-gray-500 bg-gray-100': !task.priority
                             }"
                             x-text="task.priority ? task.priority.charAt(0).toUpperCase() + task.priority.slice(1) : ''"></span>
-                        <span x-show="task.description" class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition">
-                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                                <polyline points="14 2 14 8 20 8"/>
-                                <line x1="16" y1="13" x2="8" y2="13"/>
-                                <line x1="16" y1="17" x2="8" y2="17"/>
-                            </svg>
-                        </span>
+                        <span x-show="task.due_date" class="text-[11px] text-gray-400 flex-shrink-0"
+                            x-text="task.due_date ? new Date(task.due_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''"></span>
+                        <div class="relative flex-shrink-0 opacity-0 group-hover:opacity-100 transition" @click.outside="taskMenuId = null">
+                            <button @click.stop="taskMenuId = taskMenuId === task.id ? null : task.id"
+                                class="p-1 text-gray-400 hover:text-gray-600 rounded transition">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                            </button>
+                            <div x-show="taskMenuId === task.id" x-cloak
+                                x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                class="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-[60] py-1 w-52"
+                            @click.stop>
+                                <div x-data="{ sub: null, moveOpen: false, tagOpen: false, subtaskTitle: '', tagList: @js($tags), taskTags: task.tag_ids || [], moveProject: null }" x-init="$watch('taskMenuId', () => { sub = null; moveOpen = false; tagOpen = false; taskTags = task.tag_ids || []; moveProject = null; })">
+                                    <button @click.stop="sub = sub === 'date' ? null : 'date'" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                        <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                        Date <svg class="w-3 h-3 ml-auto text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+                                    </button>
+                                    <div x-show="sub === 'date'" x-cloak class="absolute left-full top-0 ml-1 bg-white border border-gray-200 rounded-xl shadow-xl py-1 w-44 z-70">
+                                        <button @click="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({due_date:'{{ now()->toDateString() }}'})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full text-left px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">Today</button>
+                                        <button @click="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({due_date:'{{ now()->addDay()->toDateString() }}'})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full text-left px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">Tomorrow</button>
+                                        <button @click="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({due_date:'{{ now()->addWeek()->startOfWeek(Carbon\Carbon::MONDAY)->toDateString() }}'})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full text-left px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">Next Week</button>
+                                        <hr class="my-1 border-gray-100">
+                                        <div class="px-3 py-1.5"><input type="date" @change="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({due_date:$event.target.value})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full text-xs text-gray-600 border border-gray-200 rounded-lg px-2 py-1 outline-none focus:ring-1 focus:ring-brand-500"></div>
+                                    </div>
+
+                                    <button @click.stop="sub = sub === 'priority' ? null : 'priority'" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                        <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                                        Priority <svg class="w-3 h-3 ml-auto text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+                                    </button>
+                                    <div x-show="sub === 'priority'" x-cloak class="absolute left-full top-0 ml-1 bg-white border border-gray-200 rounded-xl shadow-xl py-1 w-36 z-70">
+                                        <button @click="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({priority:'low'})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition"><span class="w-2 h-2 rounded-full bg-green-500"></span> Low</button>
+                                        <button @click="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({priority:'medium'})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition"><span class="w-2 h-2 rounded-full bg-orange-400"></span> Medium</button>
+                                        <button @click="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({priority:'high'})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition"><span class="w-2 h-2 rounded-full bg-red-500"></span> High</button>
+                                    </div>
+
+                                    <hr class="my-1 border-gray-100">
+
+                                    <button @click.stop="sub = sub === 'subtask' ? null : 'subtask'" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                        <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                        Add subtask
+                                    </button>
+                                    <div x-show="sub === 'subtask'" x-cloak class="px-3 pb-2">
+                                        <div class="flex gap-1.5">
+                                            <input type="text" x-model="subtaskTitle" @keydown.enter="fetch('/tasks/'+task.id+'/subtasks',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({title:subtaskTitle})}).then(()=>{subtaskTitle='';taskMenuId=null;location.reload()})" placeholder="Subtask..." class="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-1 focus:ring-brand-500">
+                                            <button @click="fetch('/tasks/'+task.id+'/subtasks',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({title:subtaskTitle})}).then(()=>{subtaskTitle='';taskMenuId=null;location.reload()})" class="text-xs px-2 py-1.5 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition">Add</button>
+                                        </div>
+                                    </div>
+
+                                    <hr class="my-1 border-gray-100">
+
+                                    {{-- Tags --}}
+                                    <button @click.stop="tagOpen = !tagOpen" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                        <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/></svg>
+                                        Tags <svg class="w-3 h-3 ml-auto text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+                                    </button>
+                                    <div x-show="tagOpen" x-cloak class="absolute left-full top-0 ml-1 bg-white border border-gray-200 rounded-xl shadow-xl py-1 w-44 max-h-48 overflow-y-auto z-70">
+                                        <template x-for="tag in tagList" :key="tag.id">
+                                            <button @click="const idx=taskTags.indexOf(tag.id); if(idx>-1)taskTags.splice(idx,1); else taskTags.push(tag.id); fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({tag_ids:taskTags})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 transition" :class="taskTags.includes(tag.id)?'font-semibold':'text-gray-600'">
+                                                <div class="w-2 h-2 rounded-full flex-shrink-0" :style="'background-color:'+tag.color"></div>
+                                                <span class="flex-1 text-left truncate" x-text="tag.name"></span>
+                                                <svg x-show="taskTags.includes(tag.id)" class="w-3 h-3 text-brand-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                                            </button>
+                                        </template>
+                                        <p x-show="tagList.length === 0" class="px-3 py-2 text-xs text-gray-400">No tags</p>
+                                    </div>
+
+                                    {{-- Move to --}}
+                                    <div>
+                                        <button @click.stop="moveOpen = !moveOpen; moveProject = null" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                            Move to <svg class="w-3 h-3 ml-auto text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+                                        </button>
+                                        <div x-show="moveOpen" x-cloak class="absolute left-full top-0 ml-1 bg-white border border-gray-200 rounded-xl shadow-xl py-1 w-56 max-h-72 overflow-y-auto z-70">
+                                            {{-- Project list --}}
+                                            <template x-if="!moveProject">
+                                                <div>
+                                                    <template x-for="p in @js($projects)" :key="p.id">
+                                                        <div>
+                                                            <button @click.stop="if(p.sections && p.sections.length > 0){ moveProject = p } else { fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({project_id:p.id,section_id:null})}).then(()=>{taskMenuId=null;location.reload()}) }" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                                                <span x-text="p.icon||'📁'"></span>
+                                                                <span class="flex-1 text-left truncate" x-text="p.name"></span>
+                                                                <svg x-show="p.sections && p.sections.length > 0" class="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+                                                            </button>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                            {{-- Section list for selected project --}}
+                                            <template x-if="moveProject">
+                                                <div>
+                                                    <button @click.stop="moveProject = null" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-400 hover:bg-gray-50 transition">
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+                                                        <span>Back</span>
+                                                    </button>
+                                                    <hr class="my-1 border-gray-100">
+                                                    <div class="px-3 py-1.5">
+                                                        <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide" x-text="moveProject.icon||'📁'"></span>
+                                                        <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide ml-1" x-text="moveProject.name"></span>
+                                                    </div>
+                                                    <button @click.stop="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({project_id:moveProject.id,section_id:null})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                                        <span class="text-gray-300">—</span>
+                                                        <span>No section</span>
+                                                    </button>
+                                                    <template x-for="s in moveProject.sections" :key="s.id">
+                                                        <button @click.stop="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({project_id:moveProject.id,section_id:s.id})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full flex items-center gap-2 px-3 py-2 pl-6 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                                            <span class="text-gray-300">—</span>
+                                                            <span x-text="s.name"></span>
+                                                        </button>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <hr class="my-1 border-gray-100">
+
+                                    {{-- Duplicate --}}
+                                    <button @click="fetch('/tasks',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest','Accept':'application/json'},body:JSON.stringify({title:task.title + ' (copy)',project_id:task.project_id||null,section_id:task.section_id||null,priority:task.priority||'medium',status:'todo',due_date:task.due_date||null})}).then(r=>r.json()).then(newTask=>{tasksData.push({id:newTask.id,title:newTask.title,status:'todo',priority:newTask.priority||'medium',due_date:newTask.due_date||null,description:newTask.description||'',is_recurring:false,section_id:newTask.section_id||null,tag_ids:[],subtasks:[],comments:[]});taskMenuId=null}).catch(()=>{taskMenuId=null})" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                        <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                        Duplicate
+                                    </button>
+
+                                    <hr class="my-1 border-gray-100">
+
+                                    {{-- Won't Do --}}
+                                    <button @click="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({status:'wont_do'})}).then(()=>{task.status='wont_do'; syncTask(); taskMenuId=null})" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                        <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                                        Won't Do
+                                    </button>
+
+                                    <hr class="my-1 border-gray-100">
+
+                                    {{-- Delete --}}
+                                    <button @click="if(confirm('Delete this task?')){fetch('/tasks/'+task.id,{method:'DELETE',headers:{'X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'}}).then(()=>{taskMenuId=null;location.reload()})}" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-red-500 hover:bg-red-50 transition">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     </template>
                     </div>
                 </div>
             </div>
             @endforeach
+
+            {{-- Ungrouped tasks (no section) --}}
+            <div x-show="filteredTasks.filter(t => !t.section_id).length > 0">
+                <div class="px-4 py-2.5">
+                    <span class="text-sm font-semibold text-gray-400">No Section</span>
+                </div>
+                <div class="sortable-tasks" data-section="">
+                <template x-for="task in filteredTasks.filter(t => !t.section_id)" :key="task.id">
+                <div class="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition group cursor-pointer border-t border-gray-50 task-row"
+                     :data-id="task.id"
+                     @click="openEdit(task.id)">
+                    <button @click.stop="toggleTask(task.id)"
+                        class="w-[18px] h-[18px] rounded-[5px] border-2 flex-shrink-0 flex items-center justify-center cursor-pointer transition"
+                        :class="task.status === 'done' ? 'border-transparent hover:opacity-80' : task.status === 'wont_do' ? 'border-transparent hover:opacity-80' : 'border-gray-300 hover:border-brand-400'"
+                        :style="task.status === 'done' ? 'background-color: {{ $project->color }}' : task.status === 'wont_do' ? 'background-color: #9CA3AF' : ''">
+                        <svg x-show="task.status === 'done'" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <svg x-show="task.status === 'wont_do'" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                    <span x-show="task.icon" class="text-sm flex-shrink-0" x-text="task.icon"></span>
+                    <span class="flex-1 text-sm"
+                        :class="(task.status === 'done' || task.status === 'wont_do') ? 'line-through text-gray-400' : 'text-gray-800'"
+                        x-text="task.title"></span>
+                    <span class="text-[11px] font-medium px-1.5 py-0.5 rounded border"
+                        :class="{
+                            'text-red-600 bg-red-50 border-red-100': task.priority === 'high',
+                            'text-orange-500 bg-orange-50 border-orange-100': task.priority === 'medium',
+                            'text-green-600 bg-green-50 border-green-100': task.priority === 'low',
+                            'text-gray-500 bg-gray-100': !task.priority
+                        }"
+                        x-text="task.priority ? task.priority.charAt(0).toUpperCase() + task.priority.slice(1) : ''"></span>
+                    <span x-show="task.due_date" class="text-[11px] text-gray-400 flex-shrink-0"
+                        x-text="task.due_date ? new Date(task.due_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''"></span>
+                    <div class="relative flex-shrink-0 opacity-0 group-hover:opacity-100 transition" @click.outside="taskMenuId = null">
+                        <button @click.stop="taskMenuId = taskMenuId === task.id ? null : task.id"
+                            class="p-1 text-gray-400 hover:text-gray-600 rounded transition">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                        </button>
+                        <div x-show="taskMenuId === task.id" x-cloak
+                            x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                            class="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-[60] py-1 w-52"
+                            @click.stop>
+                                <div x-data="{ sub: null, moveOpen: false, tagOpen: false, subtaskTitle: '', tagList: @js($tags), taskTags: task.tag_ids || [], moveProject: null }" x-init="$watch('taskMenuId', () => { sub = null; moveOpen = false; tagOpen = false; taskTags = task.tag_ids || []; moveProject = null; })">
+                                    <button @click.stop="sub = sub === 'date' ? null : 'date'" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                        <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                        Date <svg class="w-3 h-3 ml-auto text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+                                    </button>
+                                    <div x-show="sub === 'date'" x-cloak class="absolute left-full top-0 ml-1 bg-white border border-gray-200 rounded-xl shadow-xl py-1 w-44 z-70">
+                                        <button @click="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({due_date:'{{ now()->toDateString() }}'})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full text-left px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">Today</button>
+                                        <button @click="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({due_date:'{{ now()->addDay()->toDateString() }}'})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full text-left px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">Tomorrow</button>
+                                        <button @click="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({due_date:'{{ now()->addWeek()->startOfWeek(Carbon\Carbon::MONDAY)->toDateString() }}'})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full text-left px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">Next Week</button>
+                                        <hr class="my-1 border-gray-100">
+                                        <div class="px-3 py-1.5"><input type="date" @change="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({due_date:$event.target.value})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full text-xs text-gray-600 border border-gray-200 rounded-lg px-2 py-1 outline-none focus:ring-1 focus:ring-brand-500"></div>
+                                    </div>
+                                    <button @click.stop="sub = sub === 'priority' ? null : 'priority'" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                        <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                                        Priority <svg class="w-3 h-3 ml-auto text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+                                    </button>
+                                    <div x-show="sub === 'priority'" x-cloak class="absolute left-full top-0 ml-1 bg-white border border-gray-200 rounded-xl shadow-xl py-1 w-36 z-70">
+                                        <button @click="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({priority:'low'})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition"><span class="w-2 h-2 rounded-full bg-green-500"></span> Low</button>
+                                        <button @click="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({priority:'medium'})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition"><span class="w-2 h-2 rounded-full bg-orange-400"></span> Medium</button>
+                                        <button @click="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({priority:'high'})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition"><span class="w-2 h-2 rounded-full bg-red-500"></span> High</button>
+                                    </div>
+                                    <hr class="my-1 border-gray-100">
+                                    <button @click.stop="sub = sub === 'subtask' ? null : 'subtask'" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                        <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                        Add subtask
+                                    </button>
+                                    <div x-show="sub === 'subtask'" x-cloak class="px-3 pb-2">
+                                        <div class="flex gap-1.5">
+                                            <input type="text" x-model="subtaskTitle" @keydown.enter="fetch('/tasks/'+task.id+'/subtasks',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({title:subtaskTitle})}).then(()=>{subtaskTitle='';taskMenuId=null;location.reload()})" placeholder="Subtask..." class="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-1 focus:ring-brand-500">
+                                            <button @click="fetch('/tasks/'+task.id+'/subtasks',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({title:subtaskTitle})}).then(()=>{subtaskTitle='';taskMenuId=null;location.reload()})" class="text-xs px-2 py-1.5 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition">Add</button>
+                                        </div>
+                                    </div>
+                                    <hr class="my-1 border-gray-100">
+                                    <button @click.stop="tagOpen = !tagOpen" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                        <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/></svg>
+                                        Tags <svg class="w-3 h-3 ml-auto text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+                                    </button>
+                                    <div x-show="tagOpen" x-cloak class="absolute left-full top-0 ml-1 bg-white border border-gray-200 rounded-xl shadow-xl py-1 w-44 max-h-48 overflow-y-auto z-70">
+                                        <template x-for="tag in tagList" :key="tag.id">
+                                            <button @click="const idx=taskTags.indexOf(tag.id); if(idx>-1)taskTags.splice(idx,1); else taskTags.push(tag.id); fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({tag_ids:taskTags})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 transition" :class="taskTags.includes(tag.id)?'font-semibold':'text-gray-600'">
+                                                <div class="w-2 h-2 rounded-full flex-shrink-0" :style="'background-color:'+tag.color"></div>
+                                                <span class="flex-1 text-left truncate" x-text="tag.name"></span>
+                                                <svg x-show="taskTags.includes(tag.id)" class="w-3 h-3 text-brand-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                                            </button>
+                                        </template>
+                                        <p x-show="tagList.length === 0" class="px-3 py-2 text-xs text-gray-400">No tags</p>
+                                    </div>
+                                    <div>
+                                        <button @click.stop="moveOpen = !moveOpen; moveProject = null" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                            Move to <svg class="w-3 h-3 ml-auto text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+                                        </button>
+                                        <div x-show="moveOpen" x-cloak class="absolute left-full top-0 ml-1 bg-white border border-gray-200 rounded-xl shadow-xl py-1 w-56 max-h-72 overflow-y-auto z-70">
+                                            <template x-if="!moveProject">
+                                                <div>
+                                                    <template x-for="p in @js($projects)" :key="p.id">
+                                                        <div>
+                                                            <button @click.stop="if(p.sections && p.sections.length > 0){ moveProject = p } else { fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({project_id:p.id,section_id:null})}).then(()=>{taskMenuId=null;location.reload()}) }" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                                                <span x-text="p.icon||'📁'"></span>
+                                                                <span class="flex-1 text-left truncate" x-text="p.name"></span>
+                                                                <svg x-show="p.sections && p.sections.length > 0" class="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+                                                            </button>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                            <template x-if="moveProject">
+                                                <div>
+                                                    <button @click.stop="moveProject = null" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-400 hover:bg-gray-50 transition">
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+                                                        <span>Back</span>
+                                                    </button>
+                                                    <hr class="my-1 border-gray-100">
+                                                    <div class="px-3 py-1.5">
+                                                        <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide" x-text="moveProject.icon||'📁'"></span>
+                                                        <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide ml-1" x-text="moveProject.name"></span>
+                                                    </div>
+                                                    <button @click.stop="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({project_id:moveProject.id,section_id:null})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                                        <span class="text-gray-300">—</span>
+                                                        <span>No section</span>
+                                                    </button>
+                                                    <template x-for="s in moveProject.sections" :key="s.id">
+                                                        <button @click.stop="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({project_id:moveProject.id,section_id:s.id})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full flex items-center gap-2 px-3 py-2 pl-6 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                                            <span class="text-gray-300">—</span>
+                                                            <span x-text="s.name"></span>
+                                                        </button>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                <hr class="my-1 border-gray-100">
+                                <button @click="fetch('/tasks',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest','Accept':'application/json'},body:JSON.stringify({title:task.title,project_id:task.project_id||null,section_id:task.section_id||null,priority:task.priority||'medium',status:'todo',due_date:task.due_date||null})}).then(()=>{taskMenuId=null;location.reload()})" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                    <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                    Duplicate
+                                </button>
+                                <hr class="my-1 border-gray-100">
+                                <button @click="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({status:'wont_do'})}).then(()=>{task.status='wont_do'; syncTask(); taskMenuId=null})" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                    <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                                    Won't Do
+                                </button>
+                                <hr class="my-1 border-gray-100">
+                                <button @click="if(confirm('Delete this task?')){fetch('/tasks/'+task.id,{method:'DELETE',headers:{'X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'}}).then(()=>{taskMenuId=null;location.reload()})}" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-red-500 hover:bg-red-50 transition">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </template>
+                </div>
+            </div>
 
             {{-- Add Section --}}
             <div class="border-t border-gray-100">
@@ -584,6 +946,102 @@
                         class="w-full text-sm font-medium text-gray-800 outline-none ring-0 border-0 bg-transparent placeholder-gray-400">
                 </div>
             </div>
+        </div>
+
+            {{-- Grouped view (status / priority / none) --}}
+            <div x-show="groupBy !== 'section'" x-cloak>
+                <template x-if="taskGroups">
+                <div>
+                    <template x-for="group in taskGroups" :key="group.key">
+                    <div>
+                        <div x-show="group.label" class="px-4 py-2.5 border-t border-gray-100 first:border-t-0">
+                            <span class="text-sm font-semibold text-gray-400" x-text="group.label"></span>
+                        </div>
+                        <template x-for="task in group.tasks" :key="task.id">
+                        <div class="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition group cursor-pointer border-t border-gray-50 task-row"
+                             :data-id="task.id"
+                             @click="openEdit(task.id)">
+                            <button @click.stop="toggleTask(task.id)"
+                                class="w-[18px] h-[18px] rounded-[5px] border-2 flex-shrink-0 flex items-center justify-center cursor-pointer transition"
+                                :class="task.status === 'done' ? 'border-transparent hover:opacity-80' : task.status === 'wont_do' ? 'border-transparent hover:opacity-80' : 'border-gray-300 hover:border-brand-400'"
+                                :style="task.status === 'done' ? 'background-color: {{ $project->color }}' : task.status === 'wont_do' ? 'background-color: #9CA3AF' : ''">
+                                <svg x-show="task.status === 'done'" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <svg x-show="task.status === 'wont_do'" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M18 6L6 18M6 6l12 12"/>
+                                </svg>
+                            </button>
+                            <span x-show="task.icon" class="text-sm flex-shrink-0" x-text="task.icon"></span>
+                            <span class="flex-1 text-sm"
+                                :class="(task.status === 'done' || task.status === 'wont_do') ? 'line-through text-gray-400' : 'text-gray-800'"
+                                x-text="task.title"></span>
+                            <span class="text-[11px] font-medium px-1.5 py-0.5 rounded border"
+                                :class="{
+                                    'text-red-600 bg-red-50 border-red-100': task.priority === 'high',
+                                    'text-orange-500 bg-orange-50 border-orange-100': task.priority === 'medium',
+                                    'text-green-600 bg-green-50 border-green-100': task.priority === 'low',
+                                    'text-gray-500 bg-gray-100': !task.priority
+                                }"
+                                x-text="task.priority ? task.priority.charAt(0).toUpperCase() + task.priority.slice(1) : ''"></span>
+                            <span x-show="task.due_date" class="text-[11px] text-gray-400 flex-shrink-0"
+                                x-text="task.due_date ? new Date(task.due_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''"></span>
+                            <div class="relative flex-shrink-0 opacity-0 group-hover:opacity-100 transition" @click.outside="taskMenuId = null">
+                                <button @click.stop="taskMenuId = taskMenuId === task.id ? null : task.id"
+                                    class="p-1 text-gray-400 hover:text-gray-600 rounded transition">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                                </button>
+                                <div x-show="taskMenuId === task.id" x-cloak
+                                    x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                    class="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-[60] py-1 w-52"
+                                    @click.stop>
+                                    <div x-data="{ sub: null, moveOpen: false, tagOpen: false, subtaskTitle: '', tagList: @js($tags), taskTags: task.tag_ids || [], moveProject: null }" x-init="$watch('taskMenuId', () => { sub = null; moveOpen = false; tagOpen = false; taskTags = task.tag_ids || []; moveProject = null; })">
+                                        <button @click.stop="sub = sub === 'date' ? null : 'date'" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                            Date <svg class="w-3 h-3 ml-auto text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+                                        </button>
+                                        <div x-show="sub === 'date'" x-cloak class="absolute left-full top-0 ml-1 bg-white border border-gray-200 rounded-xl shadow-xl py-1 w-44 z-70">
+                                            <button @click="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({due_date:'{{ now()->toDateString() }}'})}).then(()=>{task.status=task.status; taskMenuId=null})" class="w-full text-left px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">Today</button>
+                                            <button @click="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({due_date:'{{ now()->addDay()->toDateString() }}'})}).then(()=>{taskMenuId=null})" class="w-full text-left px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">Tomorrow</button>
+                                            <hr class="my-1 border-gray-100">
+                                            <div class="px-3 py-1.5"><input type="date" @change="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({due_date:$event.target.value})}).then(()=>{taskMenuId=null})" class="w-full text-xs text-gray-600 border border-gray-200 rounded-lg px-2 py-1 outline-none focus:ring-1 focus:ring-brand-500"></div>
+                                        </div>
+                                        <button @click.stop="sub = sub === 'priority' ? null : 'priority'" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                                            Priority <svg class="w-3 h-3 ml-auto text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+                                        </button>
+                                        <div x-show="sub === 'priority'" x-cloak class="absolute left-full top-0 ml-1 bg-white border border-gray-200 rounded-xl shadow-xl py-1 w-36 z-70">
+                                            <button @click="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({priority:'low'})}).then(()=>{task.priority='low'; taskMenuId=null})" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition"><span class="w-2 h-2 rounded-full bg-green-500"></span> Low</button>
+                                            <button @click="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({priority:'medium'})}).then(()=>{task.priority='medium'; taskMenuId=null})" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition"><span class="w-2 h-2 rounded-full bg-orange-400"></span> Medium</button>
+                                            <button @click="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({priority:'high'})}).then(()=>{task.priority='high'; taskMenuId=null})" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition"><span class="w-2 h-2 rounded-full bg-red-500"></span> High</button>
+                                        </div>
+                                        <hr class="my-1 border-gray-100">
+                                        <button @click="fetch('/tasks',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest','Accept':'application/json'},body:JSON.stringify({title:task.title,project_id:task.project_id||null,section_id:task.section_id||null,priority:task.priority||'medium',status:'todo',due_date:task.due_date||null})}).then(()=>{taskMenuId=null})" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                            Duplicate
+                                        </button>
+                                        <hr class="my-1 border-gray-100">
+                                        <button @click="fetch('/tasks/'+task.id,{method:'PATCH',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({status:'wont_do'})}).then(()=>{task.status='wont_do'; syncTask(); taskMenuId=null})" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition">
+                                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                                            Won't Do
+                                        </button>
+                                        <hr class="my-1 border-gray-100">
+                                        <button @click="if(confirm('Delete this task?')){fetch('/tasks/'+task.id,{method:'DELETE',headers:{'X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content,'X-Requested-With':'XMLHttpRequest'}}).then(()=>{taskMenuId=null})}" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-red-500 hover:bg-red-50 transition">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </template>
+                    </div>
+                    </template>
+                </div>
+                </template>
+            </div>
+
         </div>
 
         {{-- New Task Panel --}}

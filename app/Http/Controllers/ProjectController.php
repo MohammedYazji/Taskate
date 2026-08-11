@@ -55,7 +55,7 @@ class ProjectController extends Controller
         $tasks = $project->tasks()->with('tags', 'section')->get();
         $tags = $this->tagRepository->getByUser(Auth::id());
         $sections = $project->sections()->orderBy('position')->get();
-        $projects = \App\Models\Project::where('user_id', Auth::id())->where('id', '!=', $project->id)->with('sections')->orderBy('name')->get();
+        $projects = \App\Models\Project::where('user_id', Auth::id())->with('sections')->orderBy('name')->get();
         $folders = \App\Models\Folder::where('user_id', Auth::id())->with(['projects' => function ($q) use ($project) {
             $q->where('id', '!=', $project->id)->with('sections');
         }])->orderBy('name')->get();

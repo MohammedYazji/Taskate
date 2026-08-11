@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AiTaskController;
+use App\Http\Controllers\CompletedController;
 use App\Http\Controllers\HabitController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\CommentController;
@@ -120,6 +121,7 @@ Route::middleware('auth')->group(function () {
     // AI Task Generation
     Route::get('/ai/generate', [AiTaskController::class, 'showForm'])->name('ai.form');
     Route::post('/ai/generate', [AiTaskController::class, 'generate'])->name('ai.generate');
+    Route::get('/ai/{generation}', [AiTaskController::class, 'status'])->name('ai.status');
     Route::post('/ai/approve', [AiTaskController::class, 'approve'])->name('ai.approve');
 
     // Habit Tracker
@@ -130,6 +132,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/habits/{habit}/toggle', [HabitController::class, 'toggle'])->name('habits.toggle');
     Route::patch('/habits/{habit}/archive', [HabitController::class, 'archive'])->name('habits.archive');
     Route::get('/habits/{habit}/stats', [HabitController::class, 'stats'])->name('habits.stats');
+
+    // Completed
+    Route::get('/completed', [CompletedController::class, 'index'])->name('completed.index');
 });
 
 require __DIR__.'/auth.php';

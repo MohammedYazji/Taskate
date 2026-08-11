@@ -129,6 +129,7 @@
         }
     }"
     x-on:click.outside="open = false"
+    x-on:date-picker-set.window="if ($event.detail.date) { selectedDate = $event.detail.date; let p = $event.detail.date.split('-'); calYear = parseInt(p[0]); calMonth = parseInt(p[1]) - 1; }"
     class="relative inline-block">
 
     <button @click="open = !open"

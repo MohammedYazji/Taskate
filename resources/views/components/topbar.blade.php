@@ -1,10 +1,41 @@
-<header class="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 flex-shrink-0">
+<header class="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 flex-shrink-0"
+    x-data="{
+        searchQuery: '',
+        @if(request()->routeIs('projects.*'))
+        projectId: {{ $project->id ?? 'null' }},
+        @endif
+        handleSearch(e) {
+            @if(request()->routeIs('projects.*'))
+            if (this.searchQuery.trim()) {
+                e.preventDefault();
+                fetch('/tasks', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify({
+                        title: this.searchQuery.trim(),
+                        project_id: this.projectId,
+                        status: 'todo',
+                        priority: 'medium',
+                    }),
+                }).then(() => {
+                    this.searchQuery = '';
+                    window.location.reload();
+                });
+            }
+            @endif
+        }
+    }">
     <form method="GET" action="{{ route('search') }}"
         class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 w-72">
         <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
-        <input type="text" name="q" id="search-input" value="{{ request('q') }}" placeholder="Search tasks, projects..."
+        <input type="text" name="q" id="search-input" x-model="searchQuery" @keydown.enter="handleSearch($event)"
+            value="{{ request('q') }}" placeholder="{{ request()->routeIs('projects.*') ? 'Add a task...' : 'Search tasks, projects...' }}"
             class="bg-transparent text-sm text-gray-600 outline-none w-full placeholder-gray-400">
     </form>
 

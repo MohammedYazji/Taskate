@@ -17,7 +17,7 @@ class FolderController extends Controller
             'name' => $request->name,
         ]);
 
-        return response()->json($folder);
+        return back();
     }
 
     public function update(Request $request, Folder $folder)
@@ -26,7 +26,7 @@ class FolderController extends Controller
 
         $folder->update(['name' => $request->name]);
 
-        return response()->json($folder);
+        return back();
     }
 
     public function destroy(Folder $folder)
@@ -34,13 +34,13 @@ class FolderController extends Controller
         $folder->projects()->update(['folder_id' => null]);
         $folder->delete();
 
-        return response()->json(['ok' => true]);
+        return back();
     }
 
     public function pin(Folder $folder)
     {
         $folder->update(['pinned' => !$folder->pinned]);
 
-        return response()->json($folder);
+        return back();
     }
 }

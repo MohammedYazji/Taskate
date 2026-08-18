@@ -29,10 +29,7 @@ class TagController extends Controller
 
         $tag = $this->tagRepository->create(array_merge($data, ['user_id' => Auth::id()]));
 
-        if ($request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
-            return response()->json($tag);
-        }
-        return redirect()->route('tags.index');
+        return back();
     }
 
     public function update(StoreTagRequest $request, Tag $tag)
@@ -43,10 +40,7 @@ class TagController extends Controller
 
         $this->tagRepository->update($tag, $data);
 
-        if ($request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
-            return response()->json($tag->fresh());
-        }
-        return redirect()->route('tags.index');
+        return back();
     }
 
     public function destroy(Tag $tag)
@@ -55,9 +49,6 @@ class TagController extends Controller
 
         $this->tagRepository->delete($tag);
 
-        if (request()->expectsJson() || request()->header('X-Requested-With') === 'XMLHttpRequest') {
-            return response()->noContent();
-        }
-        return redirect()->route('tags.index');
+        return back();
     }
 }

@@ -135,7 +135,7 @@
         </div>
     </nav>
 
-    <!-- ==================== HERO ==================== -->
+    <!-- === HERO === -->
     <section class="relative min-h-screen flex items-center pt-16 overflow-hidden">
         <div class="glow glow-blue w-[500px] h-[500px] -top-40 -left-40" style="animation-delay:0s;"></div>
         <div class="glow glow-teal w-[400px] h-[400px] bottom-0 right-10" style="animation-delay:4s;"></div>
@@ -206,7 +206,7 @@
         </div>
     </section>
 
-    <!-- ==================== FEATURE SHOWCASE (TickTick style alternating) ==================== -->
+    <!-- === FEATURE SHOWCASE (TickTick style alternating) === -->
     <section id="features" class="py-28 bg-white">
         <div class="max-w-7xl mx-auto px-6">
             <div class="text-center mb-20 fade-up">
@@ -353,7 +353,7 @@
         </div>
     </section>
 
-    <!-- ==================== GALLERY (comprehensive features) ==================== -->
+    <!-- === GALLERY (comprehensive features) === -->
     <section class="py-28 bg-gray-50">
         <div class="max-w-7xl mx-auto px-6">
             <div class="text-center mb-16 fade-up">
@@ -391,7 +391,7 @@
         </div>
     </section>
 
-    <!-- ==================== SYNC SECTION (dark bg) ==================== -->
+    <!-- === SYNC SECTION (dark bg) === -->
     <section class="dark-section py-28 relative overflow-hidden">
         <div class="absolute top-0 left-1/4 w-64 h-64 bg-brand-400 rounded-full filter blur-[120px] opacity-20"></div>
         <div class="absolute bottom-0 right-1/4 w-48 h-48 bg-brand-300 rounded-full filter blur-[100px] opacity-15"></div>
@@ -432,7 +432,7 @@
         </div>
     </section>
 
-    <!-- ==================== CTA ==================== -->
+    <!-- === CTA === -->
     <section class="py-28 bg-white relative overflow-hidden">
         <div class="glow glow-blue w-[400px] h-[400px] -top-20 left-1/4" style="animation-delay:1s;"></div>
         <div class="glow glow-amber w-[300px] h-[300px] bottom-0 right-1/3" style="animation-delay:3s;"></div>
@@ -453,7 +453,7 @@
         </div>
     </section>
 
-    <!-- ==================== FOOTER ==================== -->
+    <!-- === FOOTER === -->
     <footer class="border-t border-gray-100 py-12 bg-gray-50">
         <div class="max-w-7xl mx-auto px-6">
             <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-8 mb-10">

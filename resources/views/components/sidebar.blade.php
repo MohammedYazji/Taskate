@@ -456,7 +456,7 @@
 
 </aside>
 
-{{-- ==================== TAG MODAL ==================== --}}
+{{-- === TAG MODAL === --}}
 <div x-show="tagModalOpen" x-cloak
     class="fixed inset-0 z-[100] flex items-center justify-center"
     x-transition:enter="transition ease-out duration-200"
@@ -533,7 +533,7 @@
     </div>
 </div>
 
-{{-- ==================== ADD/EDIT LIST MODAL ==================== --}}
+{{-- ===ADD/EDIT LIST MODAL === --}}
     <div x-show="listModalOpen" x-cloak
         class="fixed inset-0 z-[100] flex items-center justify-center"
         x-transition:enter="transition ease-out duration-200"
@@ -653,7 +653,7 @@
         </div>
     </div>
 
-    {{-- ==================== CREATE FOLDER POPUP ==================== --}}
+    {{-- === CREATE FOLDER POPUP === --}}
     <div x-show="folderModalOpen" x-cloak
         class="fixed inset-0 z-[200] flex items-center justify-center"
         x-transition:enter="transition ease-out duration-200"
@@ -693,7 +693,7 @@
         </div>
     </div>
 
-    {{-- ==================== RENAME FOLDER POPUP ==================== --}}
+    {{-- === RENAME FOLDER POPUP === --}}
     <div x-show="renameModalOpen" x-cloak
         class="fixed inset-0 z-[200] flex items-center justify-center"
         x-transition:enter="transition ease-out duration-200"

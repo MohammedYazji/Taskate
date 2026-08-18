@@ -32,11 +32,7 @@ class ProjectController extends Controller
         $data = $request->validated();
         $project = $this->projectRepository->create(array_merge($data, ['user_id' => Auth::id()]));
 
-        if ($request->wantsJson() || $request->ajax()) {
-            return response()->json($project);
-        }
-
-        return redirect()->route('projects.index');
+        return back();
     }
 
     // === Show a single project with its tasks ===
@@ -72,11 +68,7 @@ class ProjectController extends Controller
 
         $this->projectRepository->update($project, $data);
 
-        if ($request->wantsJson() || $request->ajax()) {
-            return response()->json($project);
-        }
-
-        return redirect()->route('projects.index');
+        return back();
     }
 
     // === Delete a project ===
@@ -101,11 +93,7 @@ class ProjectController extends Controller
             'view_type' => $project->view_type,
         ]);
 
-        if (request()->wantsJson() || request()->ajax()) {
-            return response()->json($newProject);
-        }
-
-        return redirect()->route('projects.show', $newProject);
+        return back();
     }
 
     // === Toggle pin ===
@@ -114,10 +102,6 @@ class ProjectController extends Controller
         $this->authorize('update', $project);
 
         $project->update(['pinned' => !$project->pinned]);
-
-        if (request()->wantsJson() || request()->ajax()) {
-            return response()->json(['pinned' => $project->pinned]);
-        }
 
         return back();
     }

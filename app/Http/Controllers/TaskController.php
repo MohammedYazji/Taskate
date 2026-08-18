@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
+use App\Models\Folder;
 use App\Models\Task;
 use App\Repositories\Interfaces\ProjectRepositoryInterface;
 use App\Repositories\Interfaces\TagRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\Interfaces\TaskRepositoryInterface;
+use Inertia\Inertia;
 
 class TaskController extends Controller
 {
@@ -32,11 +34,57 @@ class TaskController extends Controller
         $overdueTasks = $this->taskRepository->countOverdue($user);
         $tasksDueToday = $this->taskRepository->countDueToday($user);
         $tags = $this->tagRepository->getByUser($user);
-        $projects = $this->projectRepository->getByUser($user);
+        $projects = $this->projectRepository->getWithTaskCounts($user);
+        $folders = Folder::where('user_id', $user)
+            ->with('projects')
+            ->orderBy('pinned', 'desc')
+            ->orderBy('position')
+            ->get();
 
-        return view('dashboard', compact(
-            'tasks', 'totalTasks', 'completedTasks', 'overdueTasks', 'tasksDueToday', 'tags', 'projects'
-        ));
+        $next7Count = $tasks->where('status.value', '!=', 'done')
+            ->whereNotNull('due_date')
+            ->whereBetween('due_date', [now()->toDateString(), now()->addDays(7)->toDateString()])
+            ->count();
+
+        $inboxProject = $projects->firstWhere('name', 'Inbox');
+        $inboxCount = $inboxProject ? $inboxProject->tasks_count : 0;
+
+        return Inertia::render('Dashboard', [
+            'tasks' => $tasks->map(fn($t) => [
+                'id' => $t->id,
+                'title' => $t->title,
+                'description' => $t->description,
+                'priority' => $t->priority->value,
+                'status' => $t->status->value,
+                'due_date' => $t->due_date ? $t->due_date->format('Y-m-d') : null,
+                'is_recurring' => $t->is_recurring,
+                'project_name' => $t->project?->name ?? 'No project',
+                'tag_ids' => $t->tags->pluck('id')->toArray(),
+                'project_id' => $t->project_id,
+                'subtasks' => $t->subtasks->map(fn($s) => [
+                    'id' => $s->id,
+                    'title' => $s->title,
+                    'is_completed' => $s->is_completed,
+                ])->toArray(),
+                'comments' => $t->comments->map(fn($c) => [
+                    'id' => $c->id,
+                    'body' => $c->body,
+                    'user_name' => $c->user->name,
+                    'created_at' => $c->created_at->diffForHumans(),
+                ])->toArray(),
+            ])->toArray(),
+            'totalTasks' => $totalTasks,
+            'completedTasks' => $completedTasks,
+            'overdueTasks' => $overdueTasks,
+            'tasksDueToday' => $tasksDueToday,
+            'tags' => $tags,
+            'projects' => $projects,
+            'folders' => $folders,
+            'sidebar' => [
+                'next7Count' => $next7Count,
+                'inboxCount' => $inboxCount,
+            ],
+        ]);
     }
 
     public function index(Request $request)
@@ -70,15 +118,9 @@ class TaskController extends Controller
         }
 
         if ($task->project_id) {
-            if ($request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
-                return response()->json($task);
-            }
             return redirect()->route('projects.show', $task->project_id);
         }
 
-        if ($request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
-            return response()->json($task);
-        }
         return redirect()->route('dashboard');
     }
 
@@ -96,11 +138,7 @@ class TaskController extends Controller
         $allowedTagIds = array_intersect($request->tag_ids ?? [], $userTagIds);
         $this->tagRepository->syncTaskTags($task, $allowedTagIds);
 
-        if ($request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
-            return response()->json($task->fresh(['tags', 'section']));
-        }
-
-        return redirect()->route('dashboard');
+        return back();
     }
 
     // === Toggle task completion ===
@@ -132,7 +170,7 @@ class TaskController extends Controller
             'description' => $request->input('description', ''),
         ]);
 
-        return response()->json(['success' => true]);
+        return back();
     }
 }
 

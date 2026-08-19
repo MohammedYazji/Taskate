@@ -6,6 +6,7 @@ use App\Models\Habit;
 use App\Models\HabitCheckin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class HabitController extends Controller
 {
@@ -14,9 +15,33 @@ class HabitController extends Controller
         $habits = Habit::where('user_id', Auth::id())
             ->with('checkins')
             ->orderBy('position')
-            ->get();
+            ->get()
+            ->map(fn($h) => [
+                'id' => $h->id,
+                'name' => $h->name,
+                'icon' => $h->icon,
+                'frequency_type' => $h->frequency_type,
+                'frequency_config' => $h->frequency_config,
+                'frequency_label' => $h->frequency_label,
+                'goal_type' => $h->goal_type,
+                'goal_config' => $h->goal_config,
+                'goal_label' => $h->goal_label,
+                'start_date' => $h->start_date ? $h->start_date->format('Y-m-d') : '',
+                'section' => $h->section,
+                'is_archived' => $h->is_archived,
+                'streak' => $h->streak,
+                'total_checkins' => $h->total_checkins,
+                'checkins' => $h->checkins->map(fn($c) => [
+                    'date' => $c->date->format('Y-m-d'),
+                    'completed' => $c->completed,
+                    'count' => $c->count,
+                    'note' => $c->note,
+                ])->toArray(),
+                'goal_days' => $h->goal_days,
+                'reminders' => $h->reminders,
+            ]);
 
-        return view('habits.index', compact('habits'));
+        return Inertia::render('Habits', ['habits' => $habits]);
     }
 
     public function store(Request $request)

@@ -6,8 +6,8 @@ use App\Enums\SessionType;
 use App\Models\Task;
 use App\Models\Tag;
 use App\Repositories\Interfaces\PomodoroSessionRepositoryInterface;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class PomodoroController extends Controller
 {
@@ -25,10 +25,33 @@ class PomodoroController extends Controller
 
         $tags = Tag::where('user_id', $request->user()->id)->get();
 
-        return view('pomodoro.index', compact('tasks', 'tags'));
+        return Inertia::render('Pomodoro', [
+            'tasks' => $tasks->map(fn($t) => [
+                'id' => $t->id,
+                'title' => $t->title,
+                'priority' => $t->priority->value,
+                'status' => $t->status->value,
+                'due_date' => $t->due_date?->format('Y-m-d'),
+                'project_name' => $t->project?->name,
+                'tag_ids' => $t->tags->pluck('id')->toArray(),
+                'project_id' => $t->project_id,
+                'subtasks' => $t->subtasks->map(fn($s) => [
+                    'id' => $s->id,
+                    'title' => $s->title,
+                    'is_completed' => $s->is_completed,
+                ])->toArray(),
+                'comments' => $t->comments->map(fn($c) => [
+                    'id' => $c->id,
+                    'body' => $c->body,
+                    'user_name' => $c->user->name,
+                    'created_at' => $c->created_at->diffForHumans(),
+                ])->toArray(),
+            ])->toArray(),
+            'tags' => $tags,
+        ]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'task_id' => 'nullable|exists:tasks,id',
@@ -37,7 +60,7 @@ class PomodoroController extends Controller
             'duration' => 'required|integer|min:1',
         ]);
 
-        $session = $this->pomodoroRepo->create([
+        $this->pomodoroRepo->create([
             'user_id' => $request->user()->id,
             'task_id' => $validated['task_id'] ?? null,
             'note' => $validated['note'] ?? null,
@@ -48,10 +71,10 @@ class PomodoroController extends Controller
             'completed_at' => now(),
         ]);
 
-        return response()->json($session);
+        return back();
     }
 
-    public function stats(Request $request): JsonResponse
+    public function stats(Request $request)
     {
         $userId = $request->user()->id;
 

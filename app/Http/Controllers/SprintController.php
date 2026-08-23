@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\Sprint;
 use App\Repositories\Interfaces\SprintRepositoryInterface;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class SprintController extends Controller
 {
@@ -21,7 +22,23 @@ class SprintController extends Controller
         $sprints = $this->sprintRepository->getByProject($project->id);
         $activeSprint = $this->sprintRepository->getActive($project->id);
 
-        return view('sprints.index', compact('project', 'sprints', 'activeSprint'));
+        $serializeSprint = fn($s) => [
+            'id' => $s->id,
+            'name' => $s->name,
+            'goal' => $s->goal,
+            'status' => $s->status->value,
+            'start_date' => $s->start_date->format('Y-m-d'),
+            'end_date' => $s->end_date->format('Y-m-d'),
+        ];
+
+        return Inertia::render('Sprints/Index', [
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+            ],
+            'sprints' => $sprints->map($serializeSprint)->values(),
+            'activeSprint' => $activeSprint ? $serializeSprint($activeSprint) : null,
+        ]);
     }
 
     // === Create a new sprint for a project ===

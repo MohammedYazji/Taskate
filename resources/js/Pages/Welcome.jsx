@@ -9,3 +9,5 @@ export default function Welcome() {
         </div>
     );
 }
+
+Welcome.layout = (page) => page;

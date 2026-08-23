@@ -7,6 +7,7 @@ use App\Models\Project;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class AiTaskController extends Controller
 {
@@ -14,7 +15,9 @@ class AiTaskController extends Controller
     {
         $folders = \App\Models\Folder::where('user_id', Auth::id())->orderBy('name')->get();
 
-        return view('ai.generate', compact('folders'));
+        return Inertia::render('Ai/Generate', [
+            'folders' => $folders->map(fn($f) => ['id' => $f->id, 'name' => $f->name]),
+        ]);
     }
 
     public function generate(Request $request)
@@ -58,16 +61,23 @@ class AiTaskController extends Controller
         $generation->refresh();
 
         if ($generation->status === 'completed') {
-            return view('ai.review', [
+            return Inertia::render('Ai/Review', [
                 'sections' => $generation->result['sections'] ?? [],
                 'projectName' => $generation->result['project_name'] ?? '',
                 'topic' => $generation->topic,
                 'folderId' => $generation->folder_id,
-                'folders' => \App\Models\Folder::where('user_id', Auth::id())->orderBy('name')->get(),
+                'folders' => \App\Models\Folder::where('user_id', Auth::id())->orderBy('name')->get()->map(fn($f) => ['id' => $f->id, 'name' => $f->name]),
             ]);
         }
 
-        return view('ai.status', compact('generation'));
+        return Inertia::render('Ai/Status', [
+            'generation' => [
+                'id' => $generation->id,
+                'topic' => $generation->topic,
+                'status' => $generation->status,
+                'error' => $generation->error,
+            ],
+        ]);
     }
 
     public function approve(Request $request)

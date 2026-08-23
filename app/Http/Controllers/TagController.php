@@ -6,6 +6,7 @@ use App\Http\Requests\StoreTagRequest;
 use App\Models\Tag;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\Interfaces\TagRepositoryInterface;
+use Inertia\Inertia;
 
 class TagController extends Controller
 {
@@ -20,7 +21,14 @@ class TagController extends Controller
     {
         $tags = $this->tagRepository->getByUser(Auth::id());
 
-        return view('tags.index', compact('tags'));
+        return Inertia::render('Tags', [
+            'tags' => $tags->map(fn($t) => [
+                'id' => $t->id,
+                'name' => $t->name,
+                'color' => $t->color,
+                'tasks_count' => $t->tasks_count ?? 0,
+            ]),
+        ]);
     }
 
     public function store(StoreTagRequest $request)

@@ -7,17 +7,21 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
+use Inertia\Inertia;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
-    public function edit(Request $request): View
+    public function edit(Request $request)
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
+        return Inertia::render('Profile', [
+            'user' => [
+                'id' => $request->user()->id,
+                'name' => $request->user()->name,
+                'email' => $request->user()->email,
+            ],
+            'mustVerifyEmail' => $request->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail
+                && !$request->user()->hasVerifiedEmail(),
+            'sessions' => $request->user()->sessions()->orderByDesc('last_active_at')->get(),
         ]);
     }
 

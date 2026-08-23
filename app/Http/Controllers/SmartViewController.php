@@ -8,6 +8,7 @@ use App\Repositories\Interfaces\TagRepositoryInterface;
 use App\Repositories\Interfaces\TaskRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class SmartViewController extends Controller
 {
@@ -17,6 +18,43 @@ class SmartViewController extends Controller
         protected TagRepositoryInterface $tagRepository
     ) {}
 
+    private function serializeTask($t)
+    {
+        return [
+            'id' => $t->id,
+            'title' => $t->title,
+            'description' => $t->description,
+            'priority' => $t->priority->value,
+            'status' => $t->status->value,
+            'due_date' => $t->due_date ? $t->due_date->format('Y-m-d') : '',
+            'project_id' => $t->project_id,
+            'project_name' => $t->project?->name ?? '',
+            'project_color' => $t->project?->color ?? '#8b5cf6',
+            'is_pinned' => $t->is_pinned ?? false,
+            'tag_ids' => $t->tags->pluck('id')->toArray(),
+            'subtasks' => $t->subtasks->map(fn($s) => [
+                'id' => $s->id,
+                'title' => $s->title,
+                'is_completed' => $s->is_completed,
+            ])->toArray(),
+            'comments' => $t->comments->map(fn($c) => [
+                'id' => $c->id,
+                'body' => $c->body,
+                'user_name' => $c->user->name ?? '',
+                'created_at' => $c->created_at->diffForHumans(),
+            ])->toArray(),
+        ];
+    }
+
+    private function getUserTags()
+    {
+        return $this->tagRepository->getByUser(Auth::id())->map(fn($t) => [
+            'id' => $t->id,
+            'name' => $t->name,
+            'color' => $t->color,
+        ]);
+    }
+
     public function today()
     {
         $userId = Auth::id();
@@ -24,10 +62,11 @@ class SmartViewController extends Controller
             ->filter(fn($t) => $t->status !== \App\Enums\TaskStatus::Done && $t->due_date && $t->due_date->isToday())
             ->values();
 
-        $tags = $this->tagRepository->getByUser($userId);
-        $projects = $this->projectRepository->getWithTaskCounts($userId);
-
-        return view('smart.today', compact('tasks', 'tags', 'projects'));
+        return Inertia::render('Smart/Today', [
+            'tasks' => $tasks->map(fn($t) => $this->serializeTask($t)),
+            'tags' => $this->getUserTags(),
+            'dateRange' => now()->format('l, F j'),
+        ]);
     }
 
     public function next7Days()
@@ -37,10 +76,11 @@ class SmartViewController extends Controller
             ->filter(fn($t) => $t->status !== \App\Enums\TaskStatus::Done && $t->due_date && $t->due_date->gte(today()) && $t->due_date->lte(now()->addDays(7)))
             ->values();
 
-        $tags = $this->tagRepository->getByUser($userId);
-        $projects = $this->projectRepository->getWithTaskCounts($userId);
-
-        return view('smart.next7days', compact('tasks', 'tags', 'projects'));
+        return Inertia::render('Smart/Next7Days', [
+            'tasks' => $tasks->map(fn($t) => $this->serializeTask($t)),
+            'tags' => $this->getUserTags(),
+            'dateRange' => now()->format('M j') . ' - ' . now()->addDays(7)->format('M j, Y'),
+        ]);
     }
 
     public function inbox()
@@ -54,9 +94,9 @@ class SmartViewController extends Controller
                 ->values()
             : collect();
 
-        $tags = $this->tagRepository->getByUser($userId);
-        $projects = $this->projectRepository->getWithTaskCounts($userId);
-
-        return view('smart.inbox', compact('tasks', 'tags', 'projects'));
+        return Inertia::render('Smart/Inbox', [
+            'tasks' => $tasks->map(fn($t) => $this->serializeTask($t)),
+            'tags' => $this->getUserTags(),
+        ]);
     }
 }

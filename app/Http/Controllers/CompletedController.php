@@ -54,6 +54,18 @@ class CompletedController extends Controller
         $projects = $this->projectRepository->getWithTaskCounts($userId);
         $tags = $this->tagRepository->getByUser($userId);
 
-        return view('completed.index', compact('tasks', 'projects', 'tags', 'dateFilter', 'projectFilter'));
+        return \Inertia\Inertia::render('Completed', [
+            'tasks' => $tasks->map(fn($t) => [
+                'id' => $t->id,
+                'title' => $t->title,
+                'priority' => $t->priority->value,
+                'status' => $t->status->value,
+                'due_date' => $t->due_date ? $t->due_date->format('Y-m-d') : '',
+                'project_name' => $t->project?->name ?? '',
+            ]),
+            'projects' => $projects->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'icon' => $p->icon ?? '']),
+            'dateFilter' => $dateFilter,
+            'projectFilter' => $projectFilter,
+        ]);
     }
 }

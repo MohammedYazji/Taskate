@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Carbon\CarbonPeriod;
+use Inertia\Inertia;
 
 class CalendarController extends Controller
 {
@@ -53,6 +53,10 @@ class CalendarController extends Controller
                 'project_color' => $t->project?->color ?? '#8b5cf6',
             ]);
 
-        return view('calendar.index', compact('view', 'current', 'start', 'end', 'tasks'));
+        return Inertia::render('Calendar', [
+            'view' => $view,
+            'current' => $current->format('Y-m-d'),
+            'tasks' => $tasks,
+        ]);
     }
 }

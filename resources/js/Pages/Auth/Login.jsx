@@ -106,3 +106,5 @@ export default function Login({ status }) {
         </GuestLayout>
     );
 }
+
+Login.layout = (page) => page;

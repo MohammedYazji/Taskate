@@ -17,6 +17,8 @@ class SubtaskController extends Controller
     // === Create a new subtask under a task ===
     public function store(Request $request, Task $task)
     {
+        $this->authorize('update', $task);
+
         $data = $request->validate([
             'title' => 'required|string|max:255',
         ]);
@@ -29,6 +31,8 @@ class SubtaskController extends Controller
     // === Update a subtask title ===
     public function update(Request $request, Subtask $subtask)
     {
+        $this->authorize('update', $subtask->task);
+
         $data = $request->validate([
             'title' => 'required|string|max:255',
         ]);
@@ -41,6 +45,8 @@ class SubtaskController extends Controller
     // === Toggle subtask completion ===
     public function toggleComplete(Subtask $subtask)
     {
+        $this->authorize('update', $subtask->task);
+
         $this->subtaskRepository->toggleComplete($subtask);
 
         return redirect()->back();
@@ -49,6 +55,8 @@ class SubtaskController extends Controller
     // === Delete a subtask ===
     public function destroy(Subtask $subtask)
     {
+        $this->authorize('update', $subtask->task);
+
         $this->subtaskRepository->delete($subtask);
 
         return redirect()->back();

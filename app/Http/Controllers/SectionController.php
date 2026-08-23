@@ -114,6 +114,13 @@ class SectionController extends Controller
             'sections.*.position' => 'required|integer',
         ]);
 
+        $ids = collect($validated['sections'])->pluck('id');
+        $sections = Section::whereIn('id', $ids)->with('project')->get();
+
+        foreach ($sections as $section) {
+            $this->authorize('update', $section->project);
+        }
+
         foreach ($validated['sections'] as $item) {
             Section::where('id', $item['id'])->update(['position' => $item['position']]);
         }

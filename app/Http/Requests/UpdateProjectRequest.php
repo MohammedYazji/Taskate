@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateProjectRequest extends FormRequest
 {
@@ -19,7 +20,7 @@ class UpdateProjectRequest extends FormRequest
             'icon' => 'nullable|string|max:50',
             'description' => 'nullable|string|max:500',
             'view_type' => 'nullable|string|in:list,kanban,timeline',
-            'folder_id' => 'nullable|integer|exists:folders,id',
+            'folder_id' => ['nullable', 'integer', Rule::exists('folders', 'id')->where('user_id', $this->user()->id)],
         ];
     }
 }

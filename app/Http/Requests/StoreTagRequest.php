@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreTagRequest extends FormRequest
 {
@@ -17,7 +18,7 @@ class StoreTagRequest extends FormRequest
             'name' => 'required|string|max:50',
             'color' => ['required', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'icon' => 'nullable|string|max:10',
-            'parent_id' => 'nullable|integer|exists:tags,id',
+            'parent_id' => ['nullable', 'integer', Rule::exists('tags', 'id')->where('user_id', $this->user()->id)],
         ];
     }
 }

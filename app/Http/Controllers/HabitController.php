@@ -80,7 +80,7 @@ class HabitController extends Controller
 
     public function update(Request $request, Habit $habit)
     {
-        if ($habit->user_id !== Auth::id()) abort(403);
+        $this->authorize('update', $habit);
 
         $habit->update($request->only([
             'name', 'icon', 'frequency_type', 'frequency_config',
@@ -93,13 +93,15 @@ class HabitController extends Controller
 
     public function destroy(Habit $habit)
     {
-        if ($habit->user_id !== Auth::id()) abort(403);
+        $this->authorize('delete', $habit);
         $habit->delete();
         return response()->json(['success' => true]);
     }
 
     public function toggle(Request $request, Habit $habit)
     {
+        $this->authorize('update', $habit);
+
         $date = $request->date ?? now()->toDateString();
         $note = $request->input('note');
         $checkin = $habit->checkins()->where('date', $date)->first();
@@ -166,12 +168,16 @@ class HabitController extends Controller
 
     public function archive(Habit $habit)
     {
+        $this->authorize('update', $habit);
+
         $habit->update(['is_archived' => !$habit->is_archived]);
         return response()->json(['archived' => $habit->is_archived]);
     }
 
     public function stats(Request $request, Habit $habit)
     {
+        $this->authorize('view', $habit);
+
         $year = $request->input('year', now()->year);
         $month = $request->input('month', now()->month);
         $startOfMonth = now()->year($year)->month($month)->startOfMonth();

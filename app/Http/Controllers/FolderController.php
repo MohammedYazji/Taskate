@@ -22,6 +22,8 @@ class FolderController extends Controller
 
     public function update(Request $request, Folder $folder)
     {
+        $this->authorize('update', $folder);
+
         $request->validate(['name' => 'required|string|max:100']);
 
         $folder->update(['name' => $request->name]);
@@ -31,6 +33,8 @@ class FolderController extends Controller
 
     public function destroy(Folder $folder)
     {
+        $this->authorize('delete', $folder);
+
         $folder->projects()->update(['folder_id' => null]);
         $folder->delete();
 
@@ -39,6 +43,8 @@ class FolderController extends Controller
 
     public function pin(Folder $folder)
     {
+        $this->authorize('update', $folder);
+
         $folder->update(['pinned' => !$folder->pinned]);
 
         return back();

@@ -16,6 +16,8 @@ class CommentController extends Controller
 
     public function store(Request $request, Task $task)
     {
+        $this->authorize('update', $task);
+
         $data = $request->validate([
             'body' => 'required|string|max:1000',
         ]);

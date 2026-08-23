@@ -7,6 +7,7 @@ use App\Models\Task;
 use App\Models\Tag;
 use App\Repositories\Interfaces\PomodoroSessionRepositoryInterface;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class PomodoroController extends Controller
@@ -54,7 +55,7 @@ class PomodoroController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'task_id' => 'nullable|exists:tasks,id',
+            'task_id' => ['nullable', Rule::exists('tasks', 'id')->where('user_id', $request->user()->id)],
             'note' => 'nullable|string|max:500',
             'type' => 'required|string',
             'duration' => 'required|integer|min:1',

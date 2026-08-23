@@ -7,6 +7,7 @@ use App\Models\Project;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class AiTaskController extends Controller
@@ -24,7 +25,7 @@ class AiTaskController extends Controller
     {
         $request->validate([
             'topic' => 'required|string|min:5|max:500',
-            'folder_id' => 'nullable|integer|exists:folders,id',
+            'folder_id' => ['nullable', 'integer', Rule::exists('folders', 'id')->where('user_id', Auth::id())],
         ]);
 
         $generation = AiGeneration::create([
@@ -84,7 +85,7 @@ class AiTaskController extends Controller
     {
         $request->validate([
             'project_name' => 'required|string|max:255',
-            'folder_id' => 'nullable|integer|exists:folders,id',
+            'folder_id' => ['nullable', 'integer', Rule::exists('folders', 'id')->where('user_id', Auth::id())],
         ]);
 
         $user = Auth::id();

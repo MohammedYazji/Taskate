@@ -23,18 +23,6 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
 
-        $sidebar = fn () => [
-            'next7Count' => fn () => 0,
-            'inboxCount' => fn () => 0,
-        ];
-
-        if ($user) {
-            $projectRepo = app(ProjectRepositoryInterface::class);
-            $tagRepo = app(TagRepositoryInterface::class);
-
-            $sidebar = fn () => $this->buildSidebar($user, $projectRepo, $tagRepo);
-        }
-
         return [
             ...parent::share($request),
             'auth' => [
@@ -52,10 +40,11 @@ class HandleInertiaRequests extends Middleware
                 'location' => $request->url(),
                 ...(new \Tighten\Ziggy\Ziggy())->toArray(),
             ],
-            'projects' => fn () => $user ? $this->getProjects($user, app(ProjectRepositoryInterface::class)) : [],
-            'tags' => fn () => $user ? $this->getTags($user, app(TagRepositoryInterface::class)) : [],
-            'folders' => fn () => $user ? $this->getFolders($user) : [],
-            'sidebar' => $sidebar,
+            // Namespaced under a key no page controller also uses, so a page's own
+            // 'projects'/'tags'/'folders' props can never silently shadow the sidebar's.
+            'layoutSidebar' => fn () => $user
+                ? $this->buildSidebar($user, app(ProjectRepositoryInterface::class), app(TagRepositoryInterface::class))
+                : ['projects' => [], 'tags' => [], 'folders' => [], 'next7Count' => 0, 'inboxCount' => 0],
         ];
     }
 
@@ -67,12 +56,17 @@ class HandleInertiaRequests extends Middleware
 
         $inboxProject = $projects->firstWhere('name', 'Inbox');
         $inboxCount = $inboxProject ? $inboxProject->tasks_count : 0;
+        $next7Count = \App\Models\Task::where('user_id', $user->id)
+            ->where('status', '!=', \App\Enums\TaskStatus::Done)
+            ->whereNotNull('due_date')
+            ->whereBetween('due_date', [now()->toDateString(), now()->addDays(7)->toDateString()])
+            ->count();
 
         return [
             'projects' => $projects,
             'tags' => $tags,
             'folders' => $folders,
-            'next7Count' => 0,
+            'next7Count' => $next7Count,
             'inboxCount' => $inboxCount,
         ];
     }

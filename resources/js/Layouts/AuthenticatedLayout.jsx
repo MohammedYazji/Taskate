@@ -6,6 +6,7 @@ const SIDEBAR_NAV = [
     {
         name: "Dashboard",
         route: "dashboard",
+        path: "/dashboard",
         icon: (
             <svg
                 className="w-5 h-5"
@@ -25,6 +26,7 @@ const SIDEBAR_NAV = [
     {
         name: "Projects",
         route: "projects.index",
+        path: "/projects",
         icon: (
             <svg
                 className="w-5 h-5"
@@ -44,6 +46,7 @@ const SIDEBAR_NAV = [
     {
         name: "Matrix",
         route: "eisenhower.index",
+        path: "/eisenhower",
         icon: (
             <svg
                 className="w-5 h-5"
@@ -63,6 +66,7 @@ const SIDEBAR_NAV = [
     {
         name: "Pomodoro",
         route: "pomodoro.index",
+        path: "/pomodoro",
         icon: (
             <svg
                 className="w-5 h-5"
@@ -82,6 +86,7 @@ const SIDEBAR_NAV = [
     {
         name: "Habits",
         route: "habits.index",
+        path: "/habits",
         icon: (
             <svg
                 className="w-5 h-5"
@@ -101,6 +106,7 @@ const SIDEBAR_NAV = [
     {
         name: "AI",
         route: "ai.form",
+        path: "/ai",
         icon: (
             <svg
                 className="w-5 h-5"
@@ -123,6 +129,7 @@ const SIDEBAR_BOTTOM_NAV = [
     {
         name: "Tags",
         route: "tags.index",
+        path: "/tags",
         icon: (
             <svg
                 className="w-5 h-5"
@@ -353,9 +360,7 @@ function Sidebar({ sidebar }) {
                             href={route(item.route)}
                             title={item.name}
                             className={`w-10 h-10 rounded-xl flex items-center justify-center transition ${
-                                url.startsWith(
-                                    "/" + item.route.split(".").slice(-1)[0],
-                                )
+                                url.startsWith(item.path)
                                     ? "bg-brand-50 text-brand-600"
                                     : "text-gray-400 hover:text-gray-700 hover:bg-gray-200/60"
                             }`}
@@ -371,9 +376,7 @@ function Sidebar({ sidebar }) {
                             href={route(item.route)}
                             title={item.name}
                             className={`w-10 h-10 rounded-xl flex items-center justify-center transition ${
-                                url.startsWith(
-                                    "/" + item.route.split(".").slice(-1)[0],
-                                )
+                                url.startsWith(item.path)
                                     ? "bg-brand-50 text-brand-600"
                                     : "text-gray-400 hover:text-gray-700 hover:bg-gray-200/60"
                             }`}
@@ -684,6 +687,16 @@ function Sidebar({ sidebar }) {
                                                         </span>
                                                     )}
                                                 </a>
+                                                {project.pinned && (
+                                                    <svg
+                                                        className="w-3 h-3 text-gray-400 flex-shrink-0"
+                                                        fill="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                        title="Pinned"
+                                                    >
+                                                        <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                                    </svg>
+                                                )}
                                                 <span
                                                     className="w-2 h-2 rounded-full flex-shrink-0"
                                                     style={{
@@ -887,6 +900,16 @@ function Sidebar({ sidebar }) {
                                             </span>
                                         )}
                                     </a>
+                                    {project.pinned && (
+                                        <svg
+                                            className="w-3 h-3 text-gray-400 flex-shrink-0"
+                                            fill="currentColor"
+                                            viewBox="0 0 24 24"
+                                            title="Pinned"
+                                        >
+                                            <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                        </svg>
+                                    )}
                                     <span
                                         className="w-2 h-2 rounded-full flex-shrink-0"
                                         style={{
@@ -1619,14 +1642,11 @@ function Sidebar({ sidebar }) {
 
 export default function AuthenticatedLayout({ header, children }) {
     const { props } = usePage();
-    const sidebar = props.sidebar || {};
-    const projects = props.projects || [];
-    const tags = props.tags || [];
-    const folders = props.folders || [];
+    const sidebar = props.layoutSidebar || {};
 
     return (
         <div className="bg-gray-50 h-screen flex overflow-hidden">
-            <Sidebar sidebar={{ ...sidebar, projects, tags, folders }} />
+            <Sidebar sidebar={sidebar} />
             <div className="flex flex-col flex-1 overflow-hidden min-w-0">
                 <main className="flex-1 overflow-y-auto p-6">{children}</main>
             </div>

@@ -47,6 +47,8 @@ class ProjectRepository implements ProjectRepositoryInterface
             ->withCount(['tasks', 'tasks as completed_tasks_count' => function ($query) {
                 $query->where('status', TaskStatus::Done);
             }])
+            ->orderBy('pinned', 'desc')
+            ->orderBy('name')
             ->get();
     }
 }

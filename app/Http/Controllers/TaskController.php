@@ -41,14 +41,6 @@ class TaskController extends Controller
             ->orderBy('position')
             ->get();
 
-        $next7Count = $tasks->where('status.value', '!=', 'done')
-            ->whereNotNull('due_date')
-            ->whereBetween('due_date', [now()->toDateString(), now()->addDays(7)->toDateString()])
-            ->count();
-
-        $inboxProject = $projects->firstWhere('name', 'Inbox');
-        $inboxCount = $inboxProject ? $inboxProject->tasks_count : 0;
-
         return Inertia::render('Dashboard', [
             'tasks' => $tasks->map(fn($t) => [
                 'id' => $t->id,
@@ -80,10 +72,6 @@ class TaskController extends Controller
             'tags' => $tags,
             'projects' => $projects,
             'folders' => $folders,
-            'sidebar' => [
-                'next7Count' => $next7Count,
-                'inboxCount' => $inboxCount,
-            ],
         ]);
     }
 

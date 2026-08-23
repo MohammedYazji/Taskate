@@ -12,6 +12,13 @@ class Project extends Model
         'user_id', 'name', 'color', 'icon', 'view_type', 'pinned', 'folder_id', 'description', 'position'
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'pinned' => 'boolean',
+        ];
+    }
+
     // === Relationships ===
     public function user(): BelongsTo
     {

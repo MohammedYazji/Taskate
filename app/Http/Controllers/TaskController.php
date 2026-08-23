@@ -95,7 +95,33 @@ class TaskController extends Controller
         $tags = $this->tagRepository->getByUser($user);
         $projects = $this->projectRepository->getByUser($user);
 
-        return view('tasks.index', compact('tasks', 'tags', 'projects', 'filters'));
+        return Inertia::render('Tasks', [
+            'tasks' => $tasks->map(fn($t) => [
+                'id' => $t->id,
+                'title' => $t->title,
+                'description' => $t->description,
+                'priority' => $t->priority->value,
+                'status' => $t->status->value,
+                'due_date' => $t->due_date ? $t->due_date->format('Y-m-d') : null,
+                'project_id' => $t->project_id,
+                'project_name' => $t->project?->name ?? '',
+                'tag_ids' => $t->tags->pluck('id')->toArray(),
+                'subtasks' => $t->subtasks->map(fn($s) => [
+                    'id' => $s->id,
+                    'title' => $s->title,
+                    'is_completed' => $s->is_completed,
+                ])->toArray(),
+                'comments' => $t->comments->map(fn($c) => [
+                    'id' => $c->id,
+                    'body' => $c->body,
+                    'user_name' => $c->user->name ?? '',
+                    'created_at' => $c->created_at->diffForHumans(),
+                ])->toArray(),
+            ]),
+            'tags' => $tags->map(fn($t) => ['id' => $t->id, 'name' => $t->name, 'color' => $t->color, 'icon' => $t->icon]),
+            'projects' => $projects->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'icon' => $p->icon]),
+            'filters' => $filters,
+        ]);
     }
 
     // === Create a new task ===

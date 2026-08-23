@@ -9,6 +9,7 @@ use App\Repositories\Interfaces\ProjectRepositoryInterface;
 use App\Repositories\Interfaces\TaskRepositoryInterface;
 use App\Repositories\Interfaces\TagRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class ProjectController extends Controller
 {
@@ -23,7 +24,18 @@ class ProjectController extends Controller
     public function index()
     {
         $projects = $this->projectRepository->getWithTaskCounts(Auth::id());
-        return view('projects.index', compact('projects'));
+
+        return Inertia::render('Projects/Index', [
+            'projects' => $projects->map(fn($p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'color' => $p->color,
+                'description' => $p->description,
+                'tasks_count' => $p->tasks_count,
+                'completed_tasks_count' => $p->completed_tasks_count,
+                'updated_at' => $p->updated_at->diffForHumans(),
+            ]),
+        ]);
     }
 
     // === Create a new project ===
@@ -48,15 +60,42 @@ class ProjectController extends Controller
             return redirect()->route('calendar', ['project_id' => $project->id]);
         }
 
-        $tasks = $project->tasks()->with('tags', 'section')->get();
+        $tasks = $project->tasks()->with('tags', 'section', 'subtasks', 'comments.user')->get();
         $tags = $this->tagRepository->getByUser(Auth::id());
         $sections = $project->sections()->orderBy('position')->get();
         $projects = \App\Models\Project::where('user_id', Auth::id())->with('sections')->orderBy('name')->get();
-        $folders = \App\Models\Folder::where('user_id', Auth::id())->with(['projects' => function ($q) use ($project) {
-            $q->where('id', '!=', $project->id)->with('sections');
-        }])->orderBy('name')->get();
 
-        return view('projects.show', compact('project', 'tasks', 'tags', 'sections', 'projects', 'folders'));
+        return Inertia::render('Projects/Show', [
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+                'icon' => $project->icon,
+                'color' => $project->color,
+                'description' => $project->description,
+            ],
+            'sections' => $sections->map(fn($s) => ['id' => $s->id, 'name' => $s->name]),
+            'tasks' => $tasks->map(fn($t) => [
+                'id' => $t->id,
+                'title' => $t->title,
+                'description' => $t->description,
+                'priority' => $t->priority->value,
+                'status' => $t->status->value,
+                'due_date' => $t->due_date ? $t->due_date->format('Y-m-d') : '',
+                'is_recurring' => $t->is_recurring,
+                'section_id' => $t->section_id,
+                'project_id' => $t->project_id,
+                'tag_ids' => $t->tags->pluck('id')->toArray(),
+                'subtasks' => $t->subtasks->map(fn($s) => ['id' => $s->id, 'title' => $s->title, 'is_completed' => $s->is_completed])->toArray(),
+                'comments' => $t->comments->map(fn($c) => ['id' => $c->id, 'body' => $c->body, 'user_name' => $c->user->name ?? '', 'created_at' => $c->created_at->diffForHumans()])->toArray(),
+            ]),
+            'tags' => $tags->map(fn($t) => ['id' => $t->id, 'name' => $t->name, 'color' => $t->color]),
+            'projects' => $projects->map(fn($p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'icon' => $p->icon,
+                'sections' => $p->sections->map(fn($s) => ['id' => $s->id, 'name' => $s->name]),
+            ]),
+        ]);
     }
 
     // === Update a project ===

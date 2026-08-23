@@ -143,6 +143,19 @@ class TaskController extends Controller
             $this->tagRepository->attachToTask($task, $allowedTagIds);
         }
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'id' => $task->id,
+                'title' => $task->title,
+                'status' => $task->status->value,
+                'priority' => $task->priority->value,
+                'due_date' => $task->due_date ? $task->due_date->format('Y-m-d') : null,
+                'project_id' => $task->project_id,
+                'section_id' => $task->section_id,
+                'is_recurring' => $task->is_recurring,
+            ]);
+        }
+
         if ($task->project_id) {
             return redirect()->route('projects.show', $task->project_id);
         }
@@ -184,7 +197,7 @@ class TaskController extends Controller
 
         $this->taskRepository->delete($task);
 
-        return redirect()->route('dashboard');
+        return back();
     }
 
     // === Auto-save description ===

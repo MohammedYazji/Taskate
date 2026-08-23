@@ -57,6 +57,6 @@ class TagController extends Controller
 
         $this->tagRepository->delete($tag);
 
-        return back();
+        return back()->with('success', 'Tag deleted');
     }
 }

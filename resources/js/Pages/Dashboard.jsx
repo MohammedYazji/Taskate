@@ -201,8 +201,7 @@ export default function Dashboard({
             {
                 preserveScroll: true,
                 preserveState: true,
-                onSuccess: (page) => {
-                    const flash = page.props.flash;
+                onSuccess: () => {
                     setNewSubtaskTitle("");
                     setEditingNewSubtask(false);
                 },

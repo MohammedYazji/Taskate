@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { usePage, router } from "@inertiajs/react";
 import ApplicationLogo from "@/Components/ApplicationLogo";
+import Toast from "@/Components/Toast";
 
 const SIDEBAR_NAV = [
     {
@@ -1646,6 +1647,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
     return (
         <div className="bg-gray-50 h-screen flex overflow-hidden">
+            <Toast />
             <Sidebar sidebar={sidebar} />
             <div className="flex flex-col flex-1 overflow-hidden min-w-0">
                 <main className="flex-1 overflow-y-auto p-6">{children}</main>

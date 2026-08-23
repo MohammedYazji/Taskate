@@ -115,9 +115,10 @@ class ProjectController extends Controller
     {
         $this->authorize('delete', $project);
 
+        $name = $project->name;
         $this->projectRepository->delete($project);
 
-        return redirect()->route('projects.index');
+        return redirect()->route('projects.index')->with('success', "Project \"{$name}\" deleted");
     }
 
     // === Duplicate a project ===
@@ -132,7 +133,7 @@ class ProjectController extends Controller
             'view_type' => $project->view_type,
         ]);
 
-        return back();
+        return back()->with('success', "Project duplicated as \"{$newProject->name}\"");
     }
 
     // === Toggle pin ===

@@ -86,7 +86,7 @@ class SprintController extends Controller
         $projectId = $sprint->project_id;
         $this->sprintRepository->delete($sprint);
 
-        return redirect()->route('projects.sprints.index', $projectId);
+        return redirect()->route('projects.sprints.index', $projectId)->with('success', 'Sprint deleted');
     }
 
     // === Activate a sprint (completes any other active sprint) ===
@@ -96,6 +96,6 @@ class SprintController extends Controller
 
         $this->sprintRepository->activate($sprint);
 
-        return redirect()->route('projects.sprints.index', $sprint->project_id);
+        return redirect()->route('projects.sprints.index', $sprint->project_id)->with('success', "Sprint \"{$sprint->name}\" activated");
     }
 }

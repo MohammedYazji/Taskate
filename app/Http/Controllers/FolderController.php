@@ -38,7 +38,7 @@ class FolderController extends Controller
         $folder->projects()->update(['folder_id' => null]);
         $folder->delete();
 
-        return back();
+        return back()->with('success', 'Folder deleted');
     }
 
     public function pin(Folder $folder)

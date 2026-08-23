@@ -185,7 +185,7 @@ class TaskController extends Controller
 
         $this->taskRepository->delete($task);
 
-        return back();
+        return back()->with('success', 'Task deleted');
     }
 
     // === Auto-save description ===

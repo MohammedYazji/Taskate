@@ -6,6 +6,7 @@ import PriorityPicker from '@/Components/PriorityPicker';
 import TaskEditPanel from '@/Components/TaskEditPanel';
 import ProjectTaskRow from '@/Components/ProjectTaskRow';
 import ProjectMembersPanel from '@/Components/ProjectMembersPanel';
+import echo from '@/echo';
 
 const csrfToken = () => document.querySelector('meta[name=csrf-token]').content;
 
@@ -102,6 +103,15 @@ export default function Show({ project, sections: initialSections, tasks: initia
     const refreshFromServer = () => {
         router.reload({ only: ['sections', 'tasks'], preserveScroll: true });
     };
+
+    useEffect(() => {
+        const channel = echo.private(`project.${project.id}`);
+        channel.listen('.task.moved', () => refreshFromServer());
+
+        return () => {
+            echo.leave(`project.${project.id}`);
+        };
+    }, [project.id]);
 
     const toggleSection = (id) => {
         setCollapsed((prev) => {

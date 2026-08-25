@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import Sortable from 'sortablejs';
 import ProjectMembersPanel from '@/Components/ProjectMembersPanel';
+import echo from '@/echo';
 
 const csrfToken = () => document.querySelector('meta[name=csrf-token]').content;
 
@@ -11,6 +12,7 @@ function jsonFetch(url, options) {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': csrfToken(),
             'X-Requested-With': 'XMLHttpRequest',
+            'X-Socket-Id': echo.socketId() ?? '',
         },
         ...options,
     });
@@ -44,6 +46,15 @@ export default function Board({ project, sections: initialSections, ungroupedTas
     const refreshFromServer = () => {
         router.reload({ only: ['sections', 'ungroupedTasks'], preserveScroll: true });
     };
+
+    useEffect(() => {
+        const channel = echo.private(`project.${project.id}`);
+        channel.listen('.task.moved', () => refreshFromServer());
+
+        return () => {
+            echo.leave(`project.${project.id}`);
+        };
+    }, [project.id]);
 
     useEffect(() => {
         sortableInstances.current.forEach((s) => s.destroy());

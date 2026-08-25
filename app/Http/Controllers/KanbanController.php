@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\TaskMoved;
 use App\Models\Project;
 use App\Models\Section;
 use App\Models\Task;
@@ -94,6 +95,8 @@ class KanbanController extends Controller
             'section_id' => $data['section_id'] ?? null,
             'position' => $data['position'],
         ]);
+
+        broadcast(new TaskMoved($task, Auth::id()))->toOthers();
 
         return response()->json(['success' => true]);
     }

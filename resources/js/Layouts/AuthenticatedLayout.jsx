@@ -386,7 +386,7 @@ function Sidebar({ sidebar }) {
                             {item.icon}
                         </a>
                     ))}
-                    <NotificationBell />
+                    <NotificationBell userId={user.id} />
                 </div>
             </div>
 

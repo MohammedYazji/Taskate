@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import NotificationItem from "@/Components/NotificationItem";
+import echo from "@/echo";
 
 function csrfToken() {
     return document.querySelector('meta[name="csrf-token"]')?.content;
@@ -16,7 +17,7 @@ function jsonFetch(url, options = {}) {
     });
 }
 
-export default function NotificationBell() {
+export default function NotificationBell({ userId }) {
     const [open, setOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -34,9 +35,24 @@ export default function NotificationBell() {
 
     useEffect(() => {
         load();
-        pollRef.current = setInterval(load, 30000);
+        // Fallback poll in case the socket connection drops or reconnects late.
+        pollRef.current = setInterval(load, 120000);
         return () => clearInterval(pollRef.current);
     }, []);
+
+    useEffect(() => {
+        if (!userId) return;
+
+        const channel = echo.private(`App.Models.User.${userId}`);
+        channel.notification((notification) => {
+            setNotifications((prev) => [notification, ...prev]);
+            setUnreadCount((prev) => prev + 1);
+        });
+
+        return () => {
+            echo.leave(`App.Models.User.${userId}`);
+        };
+    }, [userId]);
 
     const markRead = (id) => {
         setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n)));

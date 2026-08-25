@@ -6,6 +6,8 @@ use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Folder;
 use App\Models\Task;
+use App\Models\User;
+use App\Notifications\TaskAssignedNotification;
 use App\Repositories\Interfaces\ProjectRepositoryInterface;
 use App\Repositories\Interfaces\TagRepositoryInterface;
 use Illuminate\Http\Request;
@@ -53,6 +55,8 @@ class TaskController extends Controller
                 'project_name' => $t->project?->name ?? 'No project',
                 'tag_ids' => $t->tags->pluck('id')->toArray(),
                 'project_id' => $t->project_id,
+                'assigned_to_id' => $t->assigned_to_id,
+                'assigned_to_name' => $t->assignedTo?->name,
                 'subtasks' => $t->subtasks->map(fn($s) => [
                     'id' => $s->id,
                     'title' => $s->title,
@@ -94,6 +98,8 @@ class TaskController extends Controller
                 'project_id' => $t->project_id,
                 'project_name' => $t->project?->name ?? '',
                 'tag_ids' => $t->tags->pluck('id')->toArray(),
+                'assigned_to_id' => $t->assigned_to_id,
+                'assigned_to_name' => $t->assignedTo?->name,
                 'subtasks' => $t->subtasks->map(fn($s) => [
                     'id' => $s->id,
                     'title' => $s->title,
@@ -131,6 +137,11 @@ class TaskController extends Controller
             $this->tagRepository->attachToTask($task, $allowedTagIds);
         }
 
+        if ($task->assigned_to_id && $task->assigned_to_id !== $user) {
+            $assignee = User::find($task->assigned_to_id);
+            $assignee?->notify(new TaskAssignedNotification($task, Auth::user()));
+        }
+
         if ($request->expectsJson()) {
             return response()->json([
                 'id' => $task->id,
@@ -158,7 +169,24 @@ class TaskController extends Controller
 
         $data = $request->validated();
 
+        $previousAssigneeId = $task->assigned_to_id;
+
+        // Due date changed: this task becomes eligible for a fresh due-soon reminder
+        if (array_key_exists('due_date', $data) && $data['due_date'] != $task->due_date?->format('Y-m-d')) {
+            $data['due_reminder_sent_at'] = null;
+        }
+
         $this->taskRepository->update($task, $data);
+
+        if (
+            array_key_exists('assigned_to_id', $data)
+            && $data['assigned_to_id']
+            && $data['assigned_to_id'] !== $previousAssigneeId
+            && $data['assigned_to_id'] !== Auth::id()
+        ) {
+            $assignee = User::find($data['assigned_to_id']);
+            $assignee?->notify(new TaskAssignedNotification($task, Auth::user()));
+        }
 
         // Only sync tags the user actually owns
         $userTagIds = $this->tagRepository->getByUser(Auth::id())->pluck('id')->toArray();
@@ -171,7 +199,7 @@ class TaskController extends Controller
     // === Toggle task completion ===
     public function toggleComplete(Task $task)
     {
-        $this->authorize('update', $task);
+        $this->authorize('toggleStatus', $task);
 
         $this->taskRepository->toggleComplete($task);
 

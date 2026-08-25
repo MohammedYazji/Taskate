@@ -7,10 +7,13 @@ use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\EisenhowerController;
 use App\Http\Controllers\KanbanController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PomodoroController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FolderController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectInvitationController;
+use App\Http\Controllers\ProjectMemberController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SmartViewController;
@@ -18,6 +21,7 @@ use App\Http\Controllers\SprintController;
 use App\Http\Controllers\SubtaskController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\UserSearchController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -135,6 +139,19 @@ Route::middleware('auth')->group(function () {
 
     // Completed
     Route::get('/completed', [CompletedController::class, 'index'])->name('completed.index');
+
+    // Project collaboration: members + invitations
+    Route::get('/projects/{project}/members/search', [UserSearchController::class, 'forProject'])->name('projects.members.search');
+    Route::post('/projects/{project}/invitations', [ProjectInvitationController::class, 'store'])->name('invitations.store');
+    Route::post('/invitations/{invitation}/accept', [ProjectInvitationController::class, 'accept'])->name('invitations.accept');
+    Route::post('/invitations/{invitation}/decline', [ProjectInvitationController::class, 'decline'])->name('invitations.decline');
+    Route::delete('/invitations/{invitation}', [ProjectInvitationController::class, 'cancel'])->name('invitations.cancel');
+    Route::delete('/project-members/{member}', [ProjectMemberController::class, 'destroy'])->name('project-members.destroy');
+
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+    Route::patch('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.readAll');
 });
 
 require __DIR__.'/auth.php';

@@ -9,10 +9,10 @@ use Illuminate\Support\Collection;
 
 class TaskRepository implements TaskRepositoryInterface
 {
-    // === Get all the user Tasks ===
+    // === Get all the user Tasks (owned or assigned) ===
     public function getByUser(int $userId): Collection
     {
-        return Task::with('project', 'tags', 'subtasks', 'comments.user')->where("user_id", $userId)->get();
+        return Task::with('project', 'tags', 'subtasks', 'comments.user', 'assignedTo')->forUser($userId)->get();
     }
 
     // === Fetch a task via it's id ===
@@ -51,13 +51,13 @@ class TaskRepository implements TaskRepositoryInterface
 
     public function countByUser(int $userId): int
     {
-        return Task::where('user_id', $userId)->count();
+        return Task::forUser($userId)->count();
     }
 
     // === Count of completed tasks ===
     public function countCompleted(int $userId): int
     {
-        return Task::where('user_id', $userId)
+        return Task::forUser($userId)
             ->where('status', TaskStatus::Done)
             ->count();
     }
@@ -65,7 +65,7 @@ class TaskRepository implements TaskRepositoryInterface
     // === Count of missing tasks ===
     public function countOverdue(int $userId): int
     {
-        return Task::where('user_id', $userId)
+        return Task::forUser($userId)
             ->where('due_date', '<', today())
             ->where('status', '!=', TaskStatus::Done)
             ->count();
@@ -74,23 +74,23 @@ class TaskRepository implements TaskRepositoryInterface
     // === Count of today's tasks ===
     public function countDueToday(int $userId): int
     {
-        return Task::where('user_id', $userId)
+        return Task::forUser($userId)
             ->whereDate('due_date', today())
             ->count();
     }
 
     public function search(int $userId, string $query): Collection
     {
-        return Task::with('project', 'tags', 'subtasks', 'comments.user')
-            ->where('user_id', $userId)
+        return Task::with('project', 'tags', 'subtasks', 'comments.user', 'assignedTo')
+            ->forUser($userId)
             ->where('title', 'like', "%{$query}%")
             ->get();
     }
 
     public function filter(int $userId, array $filters): Collection
     {
-        $q = Task::with('project', 'tags', 'subtasks', 'comments.user')
-            ->where('user_id', $userId);
+        $q = Task::with('project', 'tags', 'subtasks', 'comments.user', 'assignedTo')
+            ->forUser($userId);
 
         if (!empty($filters['priority'] ?? null)) {
             $q->where('priority', $filters['priority']);
@@ -155,8 +155,8 @@ class TaskRepository implements TaskRepositoryInterface
     // === Get non-done tasks for Eisenhower Matrix ===
     public function getByQuadrants(int $userId): Collection
     {
-        return Task::with('project', 'tags', 'subtasks')
-            ->where('user_id', $userId)
+        return Task::with('project', 'tags', 'subtasks', 'assignedTo')
+            ->forUser($userId)
             ->where('status', '!=', TaskStatus::Done)
             ->get();
     }

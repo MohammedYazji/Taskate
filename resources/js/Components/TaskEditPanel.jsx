@@ -3,8 +3,9 @@ import { router } from "@inertiajs/react";
 import DatePicker from "@/Components/DatePicker";
 import TiptapEditor from "@/Components/TiptapEditor";
 import PriorityPicker from "@/Components/PriorityPicker";
+import AssigneePicker from "@/Components/AssigneePicker";
 
-export default function TaskEditPanel({ task, tags, onClose, onTaskUpdate }) {
+export default function TaskEditPanel({ task, tags, members = [], onClose, onTaskUpdate }) {
     const [editTask, setEditTask] = useState(JSON.parse(JSON.stringify(task)));
     const [editMenuOpen, setEditMenuOpen] = useState(false);
     const [commentsOpen, setCommentsOpen] = useState(false);
@@ -192,6 +193,12 @@ export default function TaskEditPanel({ task, tags, onClose, onTaskUpdate }) {
                         label="Due Date"
                     />
                     <div className="flex-1" />
+                    <AssigneePicker
+                        members={members}
+                        value={editTask.assigned_to_id}
+                        onChange={(v) => saveField("assigned_to_id", v)}
+                        iconMode
+                    />
                     <PriorityPicker
                         value={editTask.priority}
                         onChange={(v) => saveField("priority", v)}

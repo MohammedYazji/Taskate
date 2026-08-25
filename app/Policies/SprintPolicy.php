@@ -7,33 +7,33 @@ use App\Models\User;
 
 class SprintPolicy
 {
-    // === Verify user owns the sprint's project ===
+    // === Any project member can view ===
     public function view(User $user, Sprint $sprint): bool
     {
-        return $user->id === $sprint->project->user_id;
+        return $sprint->project->hasMember($user);
     }
 
-    // === Allow any authenticated user to create ===
+    // === Allow any authenticated user to create (controller gates on the project itself) ===
     public function create(User $user): bool
     {
         return true;
     }
 
-    // === Verify user owns the sprint's project ===
+    // === Owner or editor on the sprint's project ===
     public function update(User $user, Sprint $sprint): bool
     {
-        return $user->id === $sprint->project->user_id;
+        return in_array($sprint->project->role($user), ['owner', 'editor'], true);
     }
 
-    // === Verify user owns the sprint's project ===
+    // === Owner or editor on the sprint's project ===
     public function delete(User $user, Sprint $sprint): bool
     {
-        return $user->id === $sprint->project->user_id;
+        return in_array($sprint->project->role($user), ['owner', 'editor'], true);
     }
 
-    // === Verify user owns the sprint's project ===
+    // === Owner or editor on the sprint's project ===
     public function activate(User $user, Sprint $sprint): bool
     {
-        return $user->id === $sprint->project->user_id;
+        return in_array($sprint->project->role($user), ['owner', 'editor'], true);
     }
 }

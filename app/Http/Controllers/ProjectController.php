@@ -60,10 +60,10 @@ class ProjectController extends Controller
             return redirect()->route('calendar', ['project_id' => $project->id]);
         }
 
-        $tasks = $project->tasks()->with('tags', 'section', 'subtasks', 'comments.user')->get();
+        $tasks = $project->tasks()->with('tags', 'section', 'subtasks', 'comments.user', 'assignedTo')->get();
         $tags = $this->tagRepository->getByUser(Auth::id());
         $sections = $project->sections()->orderBy('position')->get();
-        $projects = \App\Models\Project::where('user_id', Auth::id())->with('sections')->orderBy('name')->get();
+        $projects = Project::forUser(Auth::id())->with('sections')->orderBy('name')->get();
 
         return Inertia::render('Projects/Show', [
             'project' => [
@@ -73,6 +73,8 @@ class ProjectController extends Controller
                 'color' => $project->color,
                 'description' => $project->description,
             ],
+            'currentUserRole' => $project->role(Auth::user()),
+            'members' => $this->serializeMembers($project),
             'sections' => $sections->map(fn($s) => ['id' => $s->id, 'name' => $s->name]),
             'tasks' => $tasks->map(fn($t) => [
                 'id' => $t->id,
@@ -85,6 +87,8 @@ class ProjectController extends Controller
                 'section_id' => $t->section_id,
                 'project_id' => $t->project_id,
                 'tag_ids' => $t->tags->pluck('id')->toArray(),
+                'assigned_to_id' => $t->assigned_to_id,
+                'assigned_to_name' => $t->assignedTo?->name,
                 'subtasks' => $t->subtasks->map(fn($s) => ['id' => $s->id, 'title' => $s->title, 'is_completed' => $s->is_completed])->toArray(),
                 'comments' => $t->comments->map(fn($c) => ['id' => $c->id, 'body' => $c->body, 'user_name' => $c->user->name ?? '', 'created_at' => $c->created_at->diffForHumans()])->toArray(),
             ]),
@@ -96,6 +100,28 @@ class ProjectController extends Controller
                 'sections' => $p->sections->map(fn($s) => ['id' => $s->id, 'name' => $s->name]),
             ]),
         ]);
+    }
+
+    // === Owner + accepted collaborators, for the members panel and assignee picker ===
+    private function serializeMembers(Project $project): array
+    {
+        $owner = [
+            'id' => $project->user->id,
+            'member_id' => null,
+            'name' => $project->user->name,
+            'avatar' => $project->user->avatar,
+            'role' => 'owner',
+        ];
+
+        $members = $project->members()->get()->map(fn($u) => [
+            'id' => $u->id,
+            'member_id' => $u->pivot->id,
+            'name' => $u->name,
+            'avatar' => $u->avatar,
+            'role' => $u->pivot->role,
+        ])->all();
+
+        return array_merge([$owner], $members);
     }
 
     // === Update a project ===

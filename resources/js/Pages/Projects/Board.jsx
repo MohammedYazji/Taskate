@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import Sortable from 'sortablejs';
+import ProjectMembersPanel from '@/Components/ProjectMembersPanel';
 
 const csrfToken = () => document.querySelector('meta[name=csrf-token]').content;
 
@@ -21,7 +22,7 @@ const PRIORITY_COLORS = {
     low: 'text-green-600 bg-green-50',
 };
 
-export default function Board({ project, sections: initialSections, ungroupedTasks: initialUngrouped }) {
+export default function Board({ project, sections: initialSections, ungroupedTasks: initialUngrouped, members = [], currentUserRole = 'owner' }) {
     const [sections, setSections] = useState(initialSections);
     const [ungroupedTasks, setUngroupedTasks] = useState(initialUngrouped);
     const [sortOpen, setSortOpen] = useState(false);
@@ -135,11 +136,21 @@ export default function Board({ project, sections: initialSections, ungroupedTas
                 <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wide ${PRIORITY_COLORS[task.priority] || 'text-gray-500 bg-gray-100'}`}>
                     {task.priority}
                 </span>
-                {task.due_date && (
-                    <span className="text-[10px] text-gray-400">
-                        {new Date(task.due_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </span>
-                )}
+                <div className="flex items-center gap-1.5">
+                    {task.due_date && (
+                        <span className="text-[10px] text-gray-400">
+                            {new Date(task.due_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </span>
+                    )}
+                    {task.assigned_to_name && (
+                        <div
+                            className="w-4 h-4 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-[9px] font-semibold flex-shrink-0"
+                            title={`Assigned to ${task.assigned_to_name}`}
+                        >
+                            {task.assigned_to_name.charAt(0).toUpperCase()}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -155,6 +166,8 @@ export default function Board({ project, sections: initialSections, ungroupedTas
                     {project.description && <p className="text-sm text-gray-500">{project.description}</p>}
                 </div>
                 <div className="flex items-center gap-2">
+                    <ProjectMembersPanel project={project} members={members} isOwner={currentUserRole === 'owner'} />
+
                     <div className="relative">
                         <button onClick={() => setSortOpen(!sortOpen)} className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></svg>

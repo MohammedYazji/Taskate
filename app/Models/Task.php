@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\Importance;
 use App\Enums\Priority;
 use App\Enums\TaskStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Task extends Model
 {
     protected $fillable = [
-        "user_id","project_id","sprint_id","section_id","title","description","is_recurring","priority","importance","status", "due_date", "position"
+        "user_id","assigned_to_id","project_id","sprint_id","section_id","title","description","is_recurring","priority","importance","status", "due_date", "due_reminder_sent_at", "position"
     ];
 
     protected function casts(): array
@@ -24,6 +25,7 @@ class Task extends Model
             'importance'=> Importance::class,
             'status'=> TaskStatus::class,
             'due_date'=> 'date',
+            'due_reminder_sent_at' => 'datetime',
         ];
     }
 
@@ -31,6 +33,11 @@ class Task extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function assignedTo(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_to_id');
     }
 
     public function project(): BelongsTo
@@ -81,5 +88,15 @@ class Task extends Model
             !$important && $urgent    => 'delegate',
             default                   => 'delete',
         };
+    }
+
+    // === Scopes ===
+
+    // Tasks the user created or is assigned to
+    public function scopeForUser(Builder $query, int $userId): Builder
+    {
+        return $query->where(function (Builder $q) use ($userId) {
+            $q->where('user_id', $userId)->orWhere('assigned_to_id', $userId);
+        });
     }
 }

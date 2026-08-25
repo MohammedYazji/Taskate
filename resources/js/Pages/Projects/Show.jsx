@@ -5,6 +5,7 @@ import DatePicker from '@/Components/DatePicker';
 import PriorityPicker from '@/Components/PriorityPicker';
 import TaskEditPanel from '@/Components/TaskEditPanel';
 import ProjectTaskRow from '@/Components/ProjectTaskRow';
+import ProjectMembersPanel from '@/Components/ProjectMembersPanel';
 
 const csrfToken = () => document.querySelector('meta[name=csrf-token]').content;
 
@@ -28,7 +29,7 @@ const GROUP_ORDER = {
     priority: ['high', 'medium', 'low', 'none'],
 };
 
-export default function Show({ project, sections: initialSections, tasks: initialTasks, tags, projects }) {
+export default function Show({ project, sections: initialSections, tasks: initialTasks, tags, projects, members = [], currentUserRole = 'owner' }) {
     const [sections, setSections] = useState(initialSections);
     const [tasks, setTasks] = useState(initialTasks);
     const [collapsed, setCollapsed] = useState(() => {
@@ -379,6 +380,8 @@ export default function Show({ project, sections: initialSections, tasks: initia
                     {project.description && <p className="text-sm text-gray-500">{project.description}</p>}
                 </div>
                 <div className="flex items-center gap-2">
+                    <ProjectMembersPanel project={project} members={members} isOwner={currentUserRole === 'owner'} />
+
                     <button
                         onClick={() => { setAddingSection(true); }}
                         className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition"
@@ -697,7 +700,7 @@ export default function Show({ project, sections: initialSections, tasks: initia
 
             {/* Edit Panel */}
             {editTask && (
-                <TaskEditPanel task={editTask} tags={tags} onClose={() => setEditTask(null)} onTaskUpdate={updateTask} />
+                <TaskEditPanel task={editTask} tags={tags} members={members} onClose={() => setEditTask(null)} onTaskUpdate={updateTask} />
             )}
 
             {/* Delete Section Modal */}

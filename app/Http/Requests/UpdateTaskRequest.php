@@ -6,6 +6,7 @@ use App\Enums\Importance;
 use App\Enums\Priority;
 use App\Enums\TaskStatus;
 use App\Models\Project;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
@@ -27,11 +28,23 @@ class UpdateTaskRequest extends FormRequest
             'importance' => ['nullable', new Enum(Importance::class)],
             'status' => [new Enum(TaskStatus::class)],
             'due_date' => 'nullable|date',
-            'project_id' => ['nullable', 'integer', Rule::exists('projects', 'id')->where('user_id', $this->user()->id)],
+            'project_id' => ['nullable', 'integer', Rule::exists('projects', 'id')->whereIn(
+                'id',
+                Project::forUser($this->user()->id)->pluck('id')
+            )],
             'section_id' => ['nullable', 'integer', Rule::exists('sections', 'id')->whereIn(
                 'project_id',
-                Project::where('user_id', $this->user()->id)->pluck('id')
+                Project::forUser($this->user()->id)->pluck('id')
             )],
+            'assigned_to_id' => ['nullable', 'integer', function ($attribute, $value, $fail) {
+                if (!$value) return;
+                $projectId = $this->input('project_id') ?? $this->route('task')?->project_id;
+                $project = $projectId ? Project::find($projectId) : null;
+                $assignee = User::find($value);
+                if (!$project || !$assignee || !$project->hasMember($assignee)) {
+                    $fail('The assignee must be a member of this project.');
+                }
+            }],
             'position' => 'nullable|integer',
         ];
     }

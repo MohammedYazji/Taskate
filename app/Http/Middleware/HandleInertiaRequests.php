@@ -56,7 +56,7 @@ class HandleInertiaRequests extends Middleware
 
         $inboxProject = $projects->firstWhere('name', 'Inbox');
         $inboxCount = $inboxProject ? $inboxProject->tasks_count : 0;
-        $next7Count = \App\Models\Task::where('user_id', $user->id)
+        $next7Count = \App\Models\Task::forUser($user->id)
             ->where('status', '!=', \App\Enums\TaskStatus::Done)
             ->whereNotNull('due_date')
             ->whereBetween('due_date', [now()->toDateString(), now()->addDays(7)->toDateString()])

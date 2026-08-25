@@ -9,15 +9,20 @@ class ProjectPolicy
 {
     public function view(User $user, Project $project): bool
     {
-        return $user->id === $project->user_id;
+        return $project->hasMember($user);
     }
 
     public function update(User $user, Project $project): bool
     {
-        return $user->id === $project->user_id;
+        return in_array($project->role($user), ['owner', 'editor'], true);
     }
 
     public function delete(User $user, Project $project): bool
+    {
+        return $user->id === $project->user_id;
+    }
+
+    public function manageMembers(User $user, Project $project): bool
     {
         return $user->id === $project->user_id;
     }

@@ -17,7 +17,7 @@ class KanbanController extends Controller
 
         $sections = Section::where('project_id', $project->id)
             ->with(['tasks' => function ($q) {
-                $q->where('status', '!=', 'done')->orderBy('position')->with('subtasks');
+                $q->where('status', '!=', 'done')->orderBy('position')->with('subtasks', 'assignedTo');
             }])
             ->orderBy('position')
             ->get();
@@ -26,7 +26,7 @@ class KanbanController extends Controller
             ->whereNull('section_id')
             ->where('status', '!=', 'done')
             ->orderBy('position')
-            ->with('subtasks')
+            ->with('subtasks', 'assignedTo')
             ->get();
 
         $serializeTask = fn($t) => [
@@ -35,6 +35,8 @@ class KanbanController extends Controller
             'priority' => $t->priority->value,
             'due_date' => $t->due_date ? $t->due_date->format('Y-m-d') : null,
             'section_id' => $t->section_id,
+            'assigned_to_id' => $t->assigned_to_id,
+            'assigned_to_name' => $t->assignedTo?->name,
             'subtasks_total' => $t->subtasks->count(),
             'subtasks_done' => $t->subtasks->where('is_completed', true)->count(),
         ];
@@ -46,6 +48,8 @@ class KanbanController extends Controller
                 'icon' => $project->icon,
                 'description' => $project->description,
             ],
+            'currentUserRole' => $project->role(Auth::user()),
+            'members' => $this->serializeMembers($project),
             'sections' => $sections->map(fn($s) => [
                 'id' => $s->id,
                 'name' => $s->name,
@@ -53,6 +57,28 @@ class KanbanController extends Controller
             ]),
             'ungroupedTasks' => $ungroupedTasks->map($serializeTask)->values(),
         ]);
+    }
+
+    // === Owner + accepted collaborators, for the members panel ===
+    private function serializeMembers(Project $project): array
+    {
+        $owner = [
+            'id' => $project->user->id,
+            'member_id' => null,
+            'name' => $project->user->name,
+            'avatar' => $project->user->avatar,
+            'role' => 'owner',
+        ];
+
+        $members = $project->members()->get()->map(fn($u) => [
+            'id' => $u->id,
+            'member_id' => $u->pivot->id,
+            'name' => $u->name,
+            'avatar' => $u->avatar,
+            'role' => $u->pivot->role,
+        ])->all();
+
+        return array_merge([$owner], $members);
     }
 
     public function move(Request $request, Task $task)

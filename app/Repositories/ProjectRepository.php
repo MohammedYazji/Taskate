@@ -9,10 +9,10 @@ use Illuminate\Support\Collection;
 
 class ProjectRepository implements ProjectRepositoryInterface
 {
-    // === Get all projects for a user ===
+    // === Get all projects for a user (owned or a member of) ===
     public function getByUser(int $userId): Collection
     {
-        return Project::where('user_id', $userId)->get();
+        return Project::forUser($userId)->get();
     }
 
     // === Fetch a project by its id ===
@@ -43,7 +43,7 @@ class ProjectRepository implements ProjectRepositoryInterface
     // === Get projects with completed/total task counts for progress bar ===
     public function getWithTaskCounts(int $userId): Collection
     {
-        return Project::where('user_id', $userId)
+        return Project::forUser($userId)
             ->withCount(['tasks', 'tasks as completed_tasks_count' => function ($query) {
                 $query->where('status', TaskStatus::Done);
             }])

@@ -149,6 +149,15 @@ export default function ProjectTaskRow({ task, tags, projects, projectColor, isM
                 </span>
             )}
 
+            {task.assigned_to_name && (
+                <div
+                    className="w-5 h-5 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-[10px] font-semibold flex-shrink-0"
+                    title={`Assigned to ${task.assigned_to_name}`}
+                >
+                    {task.assigned_to_name.charAt(0).toUpperCase()}
+                </div>
+            )}
+
             <div ref={menuRef} className="relative flex-shrink-0 opacity-0 group-hover:opacity-100 transition" onClick={(e) => e.stopPropagation()}>
                 <button
                     onClick={() => onOpenMenu(isMenuOpen ? null : task.id)}

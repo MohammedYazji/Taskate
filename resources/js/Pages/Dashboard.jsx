@@ -1,10 +1,15 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { router, usePage } from "@inertiajs/react";
+import Sortable from "sortablejs";
 import DatePicker from "@/Components/DatePicker";
 import TiptapEditor from "@/Components/TiptapEditor";
 import PriorityPicker from "@/Components/PriorityPicker";
 import { DashboardSkeleton } from "@/Components/Skeleton";
 import { useLoading } from "@/Components/LoadingContext";
+
+function csrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content;
+}
 
 export default function Dashboard({
     tasks: initialTasks,
@@ -56,6 +61,40 @@ export default function Dashboard({
     for (let d = 1; d <= calDaysInMonth; d++) calDays.push(d);
 
     const todayStr = today.toISOString().split("T")[0];
+
+    const taskListRef = useRef(null);
+
+    useEffect(() => {
+        if (!taskListRef.current) return;
+        const el = taskListRef.current;
+        const sortable = new Sortable(el, {
+            animation: 150,
+            ghostClass: "opacity-30",
+            handle: ".drag-handle",
+            onEnd: (evt) => {
+                const taskId = parseInt(evt.item.dataset.id, 10);
+                const newPosition = evt.newIndex;
+                const order = sortable.toArray().map(Number);
+                const payload = order.map((id, idx) => ({ id, position: idx }));
+                fetch("/tasks/reorder", {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": csrfToken(),
+                        "X-Requested-With": "XMLHttpRequest",
+                    },
+                    body: JSON.stringify({ tasks: payload }),
+                });
+                setTasks((prev) => {
+                    const updated = [...prev];
+                    const [moved] = updated.splice(evt.oldIndex, 1);
+                    updated.splice(evt.newIndex, 0, moved);
+                    return updated.map((t, i) => ({ ...t, position: i }));
+                });
+            },
+        });
+        return () => sortable.destroy();
+    }, []);
 
     const openEdit = useCallback((task) => {
         setEditTask(JSON.parse(JSON.stringify(task)));
@@ -465,13 +504,21 @@ export default function Dashboard({
                         </div>
                     </div>
 
-                    <div className="divide-y divide-gray-100">
+                    <div ref={taskListRef} className="divide-y divide-gray-100">
                         {tasks.map((task, index) => (
                             <div
                                 key={task.id}
-                                className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50/50 transition group cursor-pointer"
+                                data-id={task.id}
+                                className="flex items-center gap-2 px-5 py-3 hover:bg-gray-50/50 transition group cursor-pointer"
                                 onClick={() => openEdit(task)}
                             >
+                                <button
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="drag-handle cursor-grab active:cursor-grabbing p-0.5 text-gray-300 hover:text-gray-500 rounded transition flex-shrink-0 opacity-0 group-hover:opacity-100"
+                                    title="Drag to reorder"
+                                >
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5" /><circle cx="15" cy="6" r="1.5" /><circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" /><circle cx="9" cy="18" r="1.5" /><circle cx="15" cy="18" r="1.5" /></svg>
+                                </button>
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();

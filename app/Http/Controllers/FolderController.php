@@ -49,4 +49,26 @@ class FolderController extends Controller
 
         return back();
     }
+
+    public function reorder(Request $request)
+    {
+        $validated = $request->validate([
+            'folders' => 'required|array',
+            'folders.*.id' => 'required|integer|exists:folders,id',
+            'folders.*.position' => 'required|integer',
+        ]);
+
+        $ids = collect($validated['folders'])->pluck('id');
+        $folders = Folder::whereIn('id', $ids)->get();
+
+        foreach ($folders as $folder) {
+            $this->authorize('update', $folder);
+        }
+
+        foreach ($validated['folders'] as $item) {
+            Folder::where('id', $item['id'])->update(['position' => $item['position']]);
+        }
+
+        return back();
+    }
 }

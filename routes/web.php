@@ -63,6 +63,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/subtasks/{subtask}', [SubtaskController::class, 'destroy'])->name('subtasks.destroy');
 
     // Project Resources
+    Route::patch('/projects/reorder', [ProjectController::class, 'reorder'])
+        ->name('projects.reorder');
     Route::resource('projects', ProjectController::class)
         ->only(['index', 'store', 'show', 'update', 'destroy']);
 
@@ -72,6 +74,7 @@ Route::middleware('auth')->group(function () {
         ->name('projects.pin');
 
     // Folder Routes
+    Route::patch('/folders/reorder', [FolderController::class, 'reorder'])->name('folders.reorder');
     Route::post('/folders', [FolderController::class, 'store'])->name('folders.store');
     Route::patch('/folders/{folder}', [FolderController::class, 'update'])->name('folders.update');
     Route::patch('/folders/{folder}/pin', [FolderController::class, 'pin'])->name('folders.pin');
@@ -118,6 +121,9 @@ Route::middleware('auth')->group(function () {
 
     Route::patch('/tasks/{task}/description', [TaskController::class, 'updateDescription'])
         ->name('tasks.description');
+
+    Route::patch('/tasks/reorder', [TaskController::class, 'reorder'])
+        ->name('tasks.reorder');
 
     Route::resource('tasks', TaskController::class)
         ->only(['index', 'store', 'update', 'destroy']);

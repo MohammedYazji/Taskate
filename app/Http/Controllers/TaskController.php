@@ -50,6 +50,7 @@ class TaskController extends Controller
                 'description' => $t->description,
                 'priority' => $t->priority->value,
                 'status' => $t->status->value,
+                'position' => $t->position,
                 'due_date' => $t->due_date ? $t->due_date->format('Y-m-d') : null,
                 'is_recurring' => $t->is_recurring,
                 'project_name' => $t->project?->name ?? 'No project',
@@ -224,6 +225,29 @@ class TaskController extends Controller
         $task->update([
             'description' => $request->input('description', ''),
         ]);
+
+        return back();
+    }
+
+    // === Bulk reorder tasks ===
+    public function reorder(Request $request)
+    {
+        $validated = $request->validate([
+            'tasks' => 'required|array',
+            'tasks.*.id' => 'required|integer|exists:tasks,id',
+            'tasks.*.position' => 'required|integer',
+        ]);
+
+        $ids = collect($validated['tasks'])->pluck('id');
+        $tasks = Task::whereIn('id', $ids)->with('project')->get();
+
+        foreach ($tasks as $task) {
+            $this->authorize('update', $task);
+        }
+
+        foreach ($validated['tasks'] as $item) {
+            Task::where('id', $item['id'])->update(['position' => $item['position']]);
+        }
 
         return back();
     }

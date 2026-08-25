@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Repositories\Interfaces\ProjectRepositoryInterface;
 use App\Repositories\Interfaces\TaskRepositoryInterface;
 use App\Repositories\Interfaces\TagRepositoryInterface;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -168,6 +169,33 @@ class ProjectController extends Controller
         $this->authorize('update', $project);
 
         $project->update(['pinned' => !$project->pinned]);
+
+        return back();
+    }
+
+    public function reorder(Request $request)
+    {
+        $validated = $request->validate([
+            'projects' => 'required|array',
+            'projects.*.id' => 'required|integer|exists:projects,id',
+            'projects.*.position' => 'required|integer',
+            'projects.*.folder_id' => 'nullable|integer|exists:folders,id',
+        ]);
+
+        $ids = collect($validated['projects'])->pluck('id');
+        $projects = Project::whereIn('id', $ids)->get();
+
+        foreach ($projects as $project) {
+            $this->authorize('update', $project);
+        }
+
+        foreach ($validated['projects'] as $item) {
+            $update = ['position' => $item['position']];
+            if (array_key_exists('folder_id', $item)) {
+                $update['folder_id'] = $item['folder_id'];
+            }
+            Project::where('id', $item['id'])->update($update);
+        }
 
         return back();
     }

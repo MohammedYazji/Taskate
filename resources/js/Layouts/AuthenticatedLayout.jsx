@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { usePage, router } from "@inertiajs/react";
+import Sortable from "sortablejs";
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import Toast from "@/Components/Toast";
 import NotificationBell from "@/Components/NotificationBell";
@@ -163,11 +164,15 @@ const COLORS = [
     "#06B6D4",
 ];
 
-function Sidebar({ sidebar }) {
+function Sidebar({ sidebar: sidebarProp }) {
     const { url, props } = usePage();
     const user = props.auth.user;
-    const [expanded, setExpanded] = useState(true);
+    const [sidebar, setSidebar] = useState(sidebarProp);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+    useEffect(() => {
+        setSidebar(sidebarProp);
+    }, [sidebarProp]);
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [foldersOpen, setFoldersOpen] = useState({});
     const [listMenuOpen, setListMenuOpen] = useState(null);
@@ -349,6 +354,125 @@ function Sidebar({ sidebar }) {
         }));
     };
 
+    const foldersRef = useRef(null);
+    const folderProjectsRef = useRef({});
+    const ungroupedRef = useRef(null);
+
+    useEffect(() => {
+        const instances = [];
+
+        if (foldersRef.current) {
+            const f = new Sortable(foldersRef.current, {
+                animation: 150,
+                handle: ".folder-drag-handle",
+                onEnd: (evt) => {
+                    const order = f.toArray().map(Number);
+                    const payload = order.map((id, idx) => ({ id, position: idx }));
+                    setSidebar((prev) => ({
+                        ...prev,
+                        folders: order
+                            .map((id) => prev.folders?.find((fo) => fo.id === id))
+                            .filter(Boolean)
+                            .map((fo, idx) => ({ ...fo, position: idx })),
+                    }));
+                    fetch("/folders/reorder", {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content,
+                            "X-Requested-With": "XMLHttpRequest",
+                        },
+                        body: JSON.stringify({ folders: payload }),
+                    });
+                },
+            });
+            instances.push(f);
+        }
+
+        Object.entries(folderProjectsRef.current).forEach(([folderId, el]) => {
+            if (!el) return;
+            const s = new Sortable(el, {
+                group: "sidebar-projects",
+                animation: 150,
+                handle: ".project-drag-handle",
+                onEnd: (evt) => {
+                    const fromItems = Sortable.get(evt.from).toArray().map(Number);
+                    const toItems = Sortable.get(evt.to).toArray().map(Number);
+                    const fromFolderId = evt.from.dataset.folderId ? Number(evt.from.dataset.folderId) : null;
+                    const toFolderId = evt.to.dataset.folderId ? Number(evt.to.dataset.folderId) : null;
+                    const seen = new Set();
+                    const payload = [
+                        ...fromItems.map((id, idx) => ({ id, position: idx, folder_id: fromFolderId })),
+                        ...toItems.map((id, idx) => ({ id, position: idx, folder_id: toFolderId })),
+                    ].filter((item) => {
+                        if (seen.has(item.id)) return false;
+                        seen.add(item.id);
+                        return true;
+                    });
+                    setSidebar((prev) => {
+                        const updatedProjects = prev.projects?.map((p) => {
+                            const found = payload.find((pl) => pl.id === p.id);
+                            return found ? { ...p, folder_id: found.folder_id, position: found.position } : p;
+                        }) || [];
+                        return { ...prev, projects: updatedProjects };
+                    });
+                    fetch("/projects/reorder", {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content,
+                            "X-Requested-With": "XMLHttpRequest",
+                        },
+                        body: JSON.stringify({ projects: payload }),
+                    });
+                },
+            });
+            instances.push(s);
+        });
+
+        if (ungroupedRef.current) {
+            const u = new Sortable(ungroupedRef.current, {
+                group: "sidebar-projects",
+                animation: 150,
+                handle: ".project-drag-handle",
+                onEnd: (evt) => {
+                    const fromItems = Sortable.get(evt.from).toArray().map(Number);
+                    const toItems = Sortable.get(evt.to).toArray().map(Number);
+                    const fromFolderId = evt.from.dataset.folderId ? Number(evt.from.dataset.folderId) : null;
+                    const toFolderId = evt.to.dataset.folderId ? Number(evt.to.dataset.folderId) : null;
+                    const seen = new Set();
+                    const payload = [
+                        ...fromItems.map((id, idx) => ({ id, position: idx, folder_id: fromFolderId })),
+                        ...toItems.map((id, idx) => ({ id, position: idx, folder_id: toFolderId })),
+                    ].filter((item) => {
+                        if (seen.has(item.id)) return false;
+                        seen.add(item.id);
+                        return true;
+                    });
+                    setSidebar((prev) => {
+                        const updatedProjects = prev.projects?.map((p) => {
+                            const found = payload.find((pl) => pl.id === p.id);
+                            return found ? { ...p, folder_id: found.folder_id, position: found.position } : p;
+                        }) || [];
+                        return { ...prev, projects: updatedProjects };
+                    });
+                    fetch("/projects/reorder", {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content,
+                            "X-Requested-With": "XMLHttpRequest",
+                        },
+                        body: JSON.stringify({ projects: payload }),
+                    });
+                },
+            });
+            instances.push(u);
+        }
+
+        return () => instances.forEach((s) => s.destroy());
+    }, [sidebar]);
+
     return (
         <>
         <aside className="flex h-screen flex-shrink-0">
@@ -500,14 +624,18 @@ function Sidebar({ sidebar }) {
                         </div>
 
                         {/* Folders */}
+                        <div ref={foldersRef}>
                         {sidebar?.folders?.map((folder) => {
                             const folderProjects =
                                 sidebar.projects?.filter(
                                     (p) => p.folder_id === folder.id,
                                 ) || [];
                             return (
-                                <div key={folder.id} className="mb-1">
+                                <div key={folder.id} data-id={folder.id} className="mb-1">
                                     <div className="flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-gray-500 group/folder">
+                                        <span className="folder-drag-handle cursor-grab active:cursor-grabbing p-0.5 text-gray-300 hover:text-gray-500 rounded transition opacity-0 group-hover/folder:opacity-100">
+                                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5" /><circle cx="15" cy="6" r="1.5" /><circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" /><circle cx="9" cy="18" r="1.5" /><circle cx="15" cy="18" r="1.5" /></svg>
+                                        </span>
                                         <button
                                             onClick={() =>
                                                 toggleFolder(folder.id)
@@ -663,12 +791,20 @@ function Sidebar({ sidebar }) {
                                             )}
                                         </div>
                                     </div>
-                                    {foldersOpen[folder.id] !== false &&
-                                        folderProjects.map((project) => (
+                                    {foldersOpen[folder.id] !== false && (
+                                        <div
+                                            ref={(el) => { if (el) folderProjectsRef.current[folder.id] = el; }}
+                                            data-folder-id={folder.id}
+                                        >
+                                        {folderProjects.map((project) => (
                                             <div
                                                 key={project.id}
+                                                data-id={project.id}
                                                 className="group relative flex items-center gap-1 pl-6 pr-3 py-1.5 rounded-lg transition text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                                             >
+                                                <span className="project-drag-handle cursor-grab active:cursor-grabbing p-0.5 text-gray-300 hover:text-gray-500 rounded transition opacity-0 group-hover:opacity-100 flex-shrink-0">
+                                                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5" /><circle cx="15" cy="6" r="1.5" /><circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" /><circle cx="9" cy="18" r="1.5" /><circle cx="15" cy="18" r="1.5" /></svg>
+                                                </span>
                                                 <a
                                                     href={route(
                                                         "projects.show",
@@ -873,18 +1009,26 @@ function Sidebar({ sidebar }) {
                                                 </div>
                                             </div>
                                         ))}
-                                </div>
-                            );
+                                 </div>
+                             )}
+                         </div>
+                             );
                         })}
+                        </div>
 
                         {/* Ungrouped */}
+                        <div ref={ungroupedRef}>
                         {sidebar?.projects
                             ?.filter((p) => !p.folder_id)
                             .map((project) => (
                                 <div
                                     key={project.id}
+                                    data-id={project.id}
                                     className="group relative flex items-center gap-1 px-3 py-2 rounded-lg transition text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                                 >
+                                    <span className="project-drag-handle cursor-grab active:cursor-grabbing p-0.5 text-gray-300 hover:text-gray-500 rounded transition opacity-0 group-hover:opacity-100 flex-shrink-0">
+                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5" /><circle cx="15" cy="6" r="1.5" /><circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" /><circle cx="9" cy="18" r="1.5" /><circle cx="15" cy="18" r="1.5" /></svg>
+                                    </span>
                                     <a
                                         href={route(
                                             "projects.show",
@@ -1075,6 +1219,8 @@ function Sidebar({ sidebar }) {
                                     </div>
                                 </div>
                             ))}
+
+                        </div>
 
                         {(!sidebar?.projects ||
                             sidebar.projects.length === 0) && (

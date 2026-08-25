@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { router, usePage } from '@inertiajs/react';
+import { PomodoroSkeleton } from '@/Components/Skeleton';
+import { useLoading } from '@/Components/LoadingContext';
 
 const SESSION_TYPES = {
     work: { label: 'Focus', duration: 25 * 60, color: 'brand', icon: '🔥' },
@@ -45,6 +47,7 @@ function SessionTypeSelector({ active, onChange }) {
 }
 
 export default function Pomodoro({ tasks, tags }) {
+    const { loading } = useLoading();
     const [sessionType, setSessionType] = useState('work');
     const [timeLeft, setTimeLeft] = useState(SESSION_TYPES.work.duration);
     const [isRunning, setIsRunning] = useState(false);
@@ -126,6 +129,8 @@ export default function Pomodoro({ tasks, tags }) {
         const nextType = sessionType === 'work' ? 'short_break' : 'work';
         switchSession(nextType);
     };
+
+    if (loading) return <PomodoroSkeleton />;
 
     return (
         <div className="max-w-5xl mx-auto">

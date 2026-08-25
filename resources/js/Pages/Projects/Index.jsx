@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
+import { ProjectsIndexSkeleton } from '@/Components/Skeleton';
+import { useLoading } from '@/Components/LoadingContext';
 
 export default function Index({ projects }) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState('');
     const [color, setColor] = useState('#7C3AED');
     const [description, setDescription] = useState('');
+    const { loading } = useLoading();
 
     const createProject = (e) => {
         e.preventDefault();
@@ -18,6 +21,8 @@ export default function Index({ projects }) {
             },
         });
     };
+
+    if (loading) return <ProjectsIndexSkeleton />;
 
     return (
         <div className="max-w-5xl">

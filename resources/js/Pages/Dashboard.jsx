@@ -3,6 +3,8 @@ import { router, usePage } from "@inertiajs/react";
 import DatePicker from "@/Components/DatePicker";
 import TiptapEditor from "@/Components/TiptapEditor";
 import PriorityPicker from "@/Components/PriorityPicker";
+import { DashboardSkeleton } from "@/Components/Skeleton";
+import { useLoading } from "@/Components/LoadingContext";
 
 export default function Dashboard({
     tasks: initialTasks,
@@ -14,6 +16,7 @@ export default function Dashboard({
     projects,
 }) {
     const { auth } = usePage().props;
+    const { loading } = useLoading();
     const [tasks, setTasks] = useState(initialTasks);
     const [editOpen, setEditOpen] = useState(false);
     const [editTask, setEditTask] = useState(null);
@@ -305,6 +308,8 @@ export default function Dashboard({
         if (hour < 17) return "☀️";
         return "🌙";
     };
+
+    if (loading) return <DashboardSkeleton />;
 
     return (
         <div className="flex gap-6">

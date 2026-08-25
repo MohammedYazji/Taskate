@@ -1,4 +1,6 @@
 import { useState, useCallback, useRef } from "react";
+import { HabitsSkeleton } from "@/Components/Skeleton";
+import { useLoading } from "@/Components/LoadingContext";
 
 const ICONS = [
     "🎯","💪","🏃","📚","💧","🧘","😴","🥗","💊","🎨",
@@ -168,6 +170,7 @@ function IconPicker({ value, onChange, onClose }) {
 }
 
 export default function Habits({ habits: initialHabits }) {
+    const { loading } = useLoading();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayStr = fmt(today);
@@ -648,6 +651,8 @@ export default function Habits({ habits: initialHabits }) {
         const d = new Date(dateStr + "T00:00:00");
         return `${DAY_NAMES[d.getDay()]}, ${MONTH_NAMES[d.getMonth()]} ${d.getDate()}`;
     };
+
+    if (loading) return <HabitsSkeleton />;
 
     return (
         <div className="max-w-5xl mx-auto select-none">

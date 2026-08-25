@@ -4,6 +4,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
 import { route as ziggyRoute } from 'ziggy-js';
 import AuthenticatedLayout from './Layouts/AuthenticatedLayout.jsx';
+import { LoadingProvider } from './Components/LoadingContext.jsx';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Taskate';
 
@@ -13,7 +14,7 @@ createInertiaApp({
         const pages = import.meta.glob('./Pages/**/*.jsx', { eager: true });
         let page = pages[`./Pages/${name}.jsx`];
 
-        page.default.layout = page.default.layout || ((p) => <AuthenticatedLayout>{p}</AuthenticatedLayout>);
+        page.default.layout = page.default.layout || ((p) => <LoadingProvider><AuthenticatedLayout>{p}</AuthenticatedLayout></LoadingProvider>);
 
         return page;
     },

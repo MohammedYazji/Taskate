@@ -312,7 +312,7 @@ export default function Dashboard({
     if (loading) return <DashboardSkeleton />;
 
     return (
-        <div className="flex gap-6">
+        <div className="flex flex-col lg:flex-row gap-6">
             {/* Left Column */}
             <div className="flex-1 min-w-0">
                 {/* Search Bar */}
@@ -359,7 +359,7 @@ export default function Dashboard({
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                     <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between mb-3">
                             <span className="text-sm text-gray-500">
@@ -641,7 +641,7 @@ export default function Dashboard({
             </div>
 
             {/* Right Column */}
-            <div className="w-72 flex-shrink-0 space-y-4">
+            <div className="w-72 flex-shrink-0 space-y-4 hidden xl:block">
                 {/* Calendar */}
                 <div className="bg-white rounded-xl border border-gray-200 p-4">
                     <div className="flex items-center justify-between mb-4">

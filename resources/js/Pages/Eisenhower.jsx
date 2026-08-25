@@ -225,7 +225,7 @@ export default function Eisenhower({ quadrants: initialQuadrants, tags }) {
                         <h1 className="text-2xl font-bold text-gray-900">Eisenhower Matrix</h1>
                         <p className="text-sm text-gray-500 mt-1">{totalTasks} tasks — drag to organize</p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-wrap justify-end">
                         {Object.entries(QUADRANTS).map(([key, q]) => (
                             <div key={key} className="flex items-center gap-1.5 text-xs text-gray-500">
                                 <div className={`w-2 h-2 rounded-full ${q.accent}`} />
@@ -238,7 +238,7 @@ export default function Eisenhower({ quadrants: initialQuadrants, tags }) {
             </div>
 
             {/* Matrix */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {Object.entries(QUADRANTS).map(([key, config]) => (
                     <QuadrantDropZone
                         key={key}

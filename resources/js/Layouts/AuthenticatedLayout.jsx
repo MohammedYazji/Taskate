@@ -167,6 +167,7 @@ function Sidebar({ sidebar }) {
     const { url, props } = usePage();
     const user = props.auth.user;
     const [expanded, setExpanded] = useState(true);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [foldersOpen, setFoldersOpen] = useState({});
     const [listMenuOpen, setListMenuOpen] = useState(null);
@@ -349,9 +350,24 @@ function Sidebar({ sidebar }) {
     };
 
     return (
+        <>
         <aside className="flex h-screen flex-shrink-0">
             {/* Icon Rail */}
             <div className="w-14 bg-gray-100 flex flex-col items-center py-4 gap-1 flex-shrink-0 border-r border-gray-200">
+                {/* Mobile hamburger */}
+                <button
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    className="lg:hidden w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-200/60 transition mb-2"
+                    title="Toggle menu"
+                >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {mobileMenuOpen ? (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        ) : (
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                        )}
+                    </svg>
+                </button>
                 <a href={route("dashboard")} className="mb-4" title="Taskate">
                     <img src="/logo.svg" alt="Taskate" className="w-9 h-9" />
                 </a>
@@ -392,7 +408,11 @@ function Sidebar({ sidebar }) {
 
             {/* Context Panel */}
             <div
-                className={`bg-white flex flex-col h-screen flex-shrink-0 border-r border-gray-200 transition-all duration-200 ${expanded ? "w-64" : "w-0 overflow-hidden"}`}
+                className={`bg-white flex flex-col h-screen flex-shrink-0 border-r border-gray-200 transition-all duration-200 overflow-hidden ${
+                    mobileMenuOpen
+                        ? "fixed inset-y-0 left-14 z-50 w-64 shadow-xl"
+                        : "hidden lg:flex w-64"
+                }`}
             >
                 <div className="flex-1 overflow-y-auto px-2 pb-4 space-y-4 pt-4">
                     {/* Smart Views */}
@@ -1621,6 +1641,14 @@ function Sidebar({ sidebar }) {
                 </>
             )}
         </aside>
+
+        {mobileMenuOpen && (
+            <div
+                className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+                onClick={() => setMobileMenuOpen(false)}
+            />
+        )}
+        </>
     );
 }
 

@@ -206,7 +206,7 @@ export default function Calendar({ view, current, tasks }) {
                     </div>
                     <h2 className="text-lg font-semibold text-gray-900">{headerLabel}</h2>
                 </div>
-                <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+                <div className="flex items-center bg-gray-100 rounded-lg p-0.5 overflow-x-auto">
                     {VIEWS.map((v) => (
                         <button
                             key={v}

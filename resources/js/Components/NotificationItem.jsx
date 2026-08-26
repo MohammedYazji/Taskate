@@ -10,8 +10,9 @@ export default function NotificationItem({ notification, onRead }) {
 
     const open = () => {
         onRead(notification.id);
-        if (notification.action_url) {
-            router.visit(notification.action_url);
+        const url = notification.action_url || (notification.project_id ? `/projects/${notification.project_id}` : null);
+        if (url) {
+            router.visit(url);
         }
     };
 

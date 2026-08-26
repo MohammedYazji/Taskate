@@ -7,6 +7,8 @@ use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Folder;
 use App\Models\Task;
 use App\Models\User;
+use App\Events\TaskDeleted;
+use App\Events\TaskUpdated;
 use App\Notifications\TaskAssignedNotification;
 use App\Repositories\Interfaces\ProjectRepositoryInterface;
 use App\Repositories\Interfaces\TagRepositoryInterface;
@@ -179,6 +181,10 @@ class TaskController extends Controller
 
         $this->taskRepository->update($task, $data);
 
+        if ($task->project_id) {
+            broadcast(new TaskUpdated($task, Auth::id()))->toOthers();
+        }
+
         if (
             array_key_exists('assigned_to_id', $data)
             && $data['assigned_to_id']
@@ -204,6 +210,10 @@ class TaskController extends Controller
 
         $this->taskRepository->toggleComplete($task);
 
+        if ($task->project_id) {
+            broadcast(new TaskUpdated($task, Auth::id()))->toOthers();
+        }
+
         return redirect()->back();
     }
 
@@ -212,7 +222,15 @@ class TaskController extends Controller
     {
         $this->authorize('delete', $task);
 
+        $projectId = $task->project_id;
+        $taskId = $task->id;
+
         $this->taskRepository->delete($task);
+
+        if ($projectId) {
+            $task->project_id = $projectId;
+            broadcast(new TaskDeleted($task, Auth::id()))->toOthers();
+        }
 
         return back()->with('success', 'Task deleted');
     }
@@ -225,6 +243,10 @@ class TaskController extends Controller
         $task->update([
             'description' => $request->input('description', ''),
         ]);
+
+        if ($task->project_id) {
+            broadcast(new TaskUpdated($task, Auth::id()))->toOthers();
+        }
 
         return back();
     }

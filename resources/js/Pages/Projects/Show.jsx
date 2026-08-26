@@ -44,6 +44,7 @@ export default function Show({ project, sections: initialSections, tasks: initia
 
     useEffect(() => {
         setSections(initialSections);
+        setTasks(initialTasks);
         setCollapsed((prev) => {
             const state = { ...prev };
             initialSections.forEach((s) => {
@@ -108,11 +109,21 @@ export default function Show({ project, sections: initialSections, tasks: initia
     useEffect(() => {
         const channel = echo.private(`project.${project.id}`);
         channel.listen('.task.moved', () => refreshFromServer());
+        channel.listen('.task.updated', () => refreshFromServer());
+        channel.listen('.task.deleted', () => refreshFromServer());
 
         return () => {
             echo.leave(`project.${project.id}`);
         };
     }, [project.id]);
+
+    useEffect(() => {
+        if (!editTask || !initialTasks) return;
+        const updated = initialTasks.find((t) => t.id === editTask.id);
+        if (updated && JSON.stringify(updated) !== JSON.stringify(editTask)) {
+            setEditTask(updated);
+        }
+    }, [initialTasks]);
 
     const toggleSection = (id) => {
         setCollapsed((prev) => {

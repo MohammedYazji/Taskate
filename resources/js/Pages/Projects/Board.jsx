@@ -51,6 +51,8 @@ export default function Board({ project, sections: initialSections, ungroupedTas
     useEffect(() => {
         const channel = echo.private(`project.${project.id}`);
         channel.listen('.task.moved', () => refreshFromServer());
+        channel.listen('.task.updated', () => refreshFromServer());
+        channel.listen('.task.deleted', () => refreshFromServer());
 
         return () => {
             echo.leave(`project.${project.id}`);

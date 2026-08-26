@@ -6,7 +6,14 @@ export default function usePresence(channelName) {
 
     useEffect(() => {
         let cancelled = false;
-        const channel = echo.join(channelName);
+        let channel;
+
+        try {
+            channel = echo.join(channelName);
+        } catch (e) {
+            console.error('[Presence] Failed to join channel:', channelName, e);
+            return;
+        }
 
         channel.here((users) => {
             if (!cancelled) setMembers(users);
@@ -18,6 +25,10 @@ export default function usePresence(channelName) {
 
         channel.leaving((user) => {
             if (!cancelled) setMembers((prev) => prev.filter((u) => u.id !== user.id));
+        });
+
+        channel.error((e) => {
+            console.error('[Presence] Channel error:', channelName, e);
         });
 
         return () => {

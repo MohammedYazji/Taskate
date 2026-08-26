@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import Sortable from 'sortablejs';
 import ProjectMembersPanel from '@/Components/ProjectMembersPanel';
+import WhoIsViewing from '@/Components/WhoIsViewing';
 import echo from '@/echo';
 
 const csrfToken = () => document.querySelector('meta[name=csrf-token]').content;
@@ -175,6 +176,7 @@ export default function Board({ project, sections: initialSections, ungroupedTas
                     <span className="text-xl flex-shrink-0">{project.icon}</span>
                     <h1 className="text-xl font-bold text-gray-900 truncate max-w-[400px]">{project.name}</h1>
                     {project.description && <p className="text-sm text-gray-500">{project.description}</p>}
+                    <WhoIsViewing projectId={project.id} />
                 </div>
                 <div className="flex items-center gap-2">
                     <ProjectMembersPanel project={project} members={members} isOwner={currentUserRole === 'owner'} />

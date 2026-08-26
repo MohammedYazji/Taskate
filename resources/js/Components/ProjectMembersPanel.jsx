@@ -1,21 +1,14 @@
 import { useState } from "react";
 import { router } from "@inertiajs/react";
 import InviteMemberModal from "@/Components/InviteMemberModal";
-
-function Avatar({ member }) {
-    if (member.avatar) {
-        return <img src={member.avatar} alt={member.name} className="w-7 h-7 rounded-full object-cover flex-shrink-0" />;
-    }
-    return (
-        <div className="w-7 h-7 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-xs font-semibold flex-shrink-0">
-            {member.name?.charAt(0).toUpperCase()}
-        </div>
-    );
-}
+import OnlineAvatar from "@/Components/OnlineAvatar";
+import usePresence from "@/hooks/usePresence";
 
 export default function ProjectMembersPanel({ project, members, isOwner }) {
     const [open, setOpen] = useState(false);
     const [inviting, setInviting] = useState(false);
+    const onlineUsers = usePresence('presence:online');
+    const onlineIds = new Set(onlineUsers.map((u) => u.id));
 
     const removeMember = (member) => {
         if (!confirm(`Remove ${member.name} from this project?`)) return;
@@ -31,7 +24,7 @@ export default function ProjectMembersPanel({ project, members, isOwner }) {
             >
                 {members.slice(0, 4).map((m) => (
                     <div key={m.id} className="ring-2 ring-white rounded-full">
-                        <Avatar member={m} />
+                        <OnlineAvatar member={m} online={onlineIds.has(m.id)} />
                     </div>
                 ))}
                 {members.length > 4 && (
@@ -62,7 +55,7 @@ export default function ProjectMembersPanel({ project, members, isOwner }) {
                         <div className="max-h-56 overflow-y-auto">
                             {members.map((m) => (
                                 <div key={m.id} className="flex items-center gap-2.5 px-3 py-2 group">
-                                    <Avatar member={m} />
+                                    <OnlineAvatar member={m} online={onlineIds.has(m.id)} />
                                     <div className="flex-1 min-w-0">
                                         <p className="text-xs text-gray-800 truncate">{m.name}</p>
                                         <p className="text-[10px] text-gray-400 capitalize">{m.role}</p>

@@ -4,6 +4,7 @@ import Sortable from "sortablejs";
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import Toast from "@/Components/Toast";
 import NotificationBell from "@/Components/NotificationBell";
+import usePresence from "@/hooks/usePresence";
 
 const SIDEBAR_NAV = [
     {
@@ -168,6 +169,7 @@ function Sidebar({ sidebar }) {
     const { url, props } = usePage();
     const user = props.auth.user;
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const onlineUsers = usePresence('presence:online');
 
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [foldersOpen, setFoldersOpen] = useState({});
@@ -1361,8 +1363,9 @@ function Sidebar({ sidebar }) {
                             onClick={() => setUserMenuOpen(!userMenuOpen)}
                             className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition cursor-pointer text-left"
                         >
-                            <div className="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+                            <div className="relative w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
                                 {user?.name?.charAt(0).toUpperCase()}
+                                {onlineUsers.length > 0 && <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 ring-2 ring-white" />}
                             </div>
                             <span className="flex-1 text-sm font-medium text-gray-700 truncate">
                                 {user?.name}

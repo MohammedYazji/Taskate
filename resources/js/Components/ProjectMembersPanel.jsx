@@ -7,7 +7,7 @@ import usePresence from "@/hooks/usePresence";
 export default function ProjectMembersPanel({ project, members, isOwner }) {
     const [open, setOpen] = useState(false);
     const [inviting, setInviting] = useState(false);
-    const onlineUsers = usePresence('presence:online');
+    const onlineUsers = usePresence('online');
     const onlineIds = new Set(onlineUsers.map((u) => u.id));
 
     const removeMember = (member) => {

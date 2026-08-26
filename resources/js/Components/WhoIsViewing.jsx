@@ -4,7 +4,7 @@ import usePresence from '@/hooks/usePresence';
 export default function WhoIsViewing({ projectId }) {
     const { props } = usePage();
     const currentUserId = props.auth.user.id;
-    const viewers = usePresence(`presence:project.${projectId}`);
+    const viewers = usePresence(`project.presence.${projectId}`);
     const others = viewers.filter((u) => u.id !== currentUserId);
 
     if (others.length === 0) return null;

@@ -170,7 +170,7 @@ function Sidebar({ sidebar }) {
     const { url, props } = usePage();
     const user = props.auth.user;
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const onlineUsers = usePresence('presence:online');
+    const onlineUsers = usePresence('online');
 
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [foldersOpen, setFoldersOpen] = useState({});

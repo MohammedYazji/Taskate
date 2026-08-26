@@ -9,11 +9,19 @@ export default function NotificationItem({ notification, onRead }) {
     };
 
     const open = () => {
+        if (notification.type === "project_invitation" && notification.invitation_id) {
+            onRead(notification.id);
+            router.post(`/invitations/${notification.invitation_id}/accept`, {}, {
+                preserveScroll: false,
+                onSuccess: () => {
+                    if (notification.project_id) router.visit(`/projects/${notification.project_id}`);
+                },
+            });
+            return;
+        }
         onRead(notification.id);
         const url = notification.action_url || (notification.project_id ? `/projects/${notification.project_id}` : null);
-        if (url) {
-            router.visit(url);
-        }
+        if (url) router.visit(url);
     };
 
     return (

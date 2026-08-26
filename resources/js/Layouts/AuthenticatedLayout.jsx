@@ -164,15 +164,11 @@ const COLORS = [
     "#06B6D4",
 ];
 
-function Sidebar({ sidebar: sidebarProp }) {
+function Sidebar({ sidebar }) {
     const { url, props } = usePage();
     const user = props.auth.user;
-    const [sidebar, setSidebar] = useState(sidebarProp);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    useEffect(() => {
-        setSidebar(sidebarProp);
-    }, [sidebarProp]);
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [foldersOpen, setFoldersOpen] = useState({});
     const [listMenuOpen, setListMenuOpen] = useState(null);
@@ -368,13 +364,6 @@ function Sidebar({ sidebar: sidebarProp }) {
                 onEnd: (evt) => {
                     const order = f.toArray().map(Number);
                     const payload = order.map((id, idx) => ({ id, position: idx }));
-                    setSidebar((prev) => ({
-                        ...prev,
-                        folders: order
-                            .map((id) => prev.folders?.find((fo) => fo.id === id))
-                            .filter(Boolean)
-                            .map((fo, idx) => ({ ...fo, position: idx })),
-                    }));
                     fetch("/folders/reorder", {
                         method: "PATCH",
                         headers: {
@@ -409,13 +398,6 @@ function Sidebar({ sidebar: sidebarProp }) {
                         seen.add(item.id);
                         return true;
                     });
-                    setSidebar((prev) => {
-                        const updatedProjects = prev.projects?.map((p) => {
-                            const found = payload.find((pl) => pl.id === p.id);
-                            return found ? { ...p, folder_id: found.folder_id, position: found.position } : p;
-                        }) || [];
-                        return { ...prev, projects: updatedProjects };
-                    });
                     fetch("/projects/reorder", {
                         method: "PATCH",
                         headers: {
@@ -448,13 +430,6 @@ function Sidebar({ sidebar: sidebarProp }) {
                         if (seen.has(item.id)) return false;
                         seen.add(item.id);
                         return true;
-                    });
-                    setSidebar((prev) => {
-                        const updatedProjects = prev.projects?.map((p) => {
-                            const found = payload.find((pl) => pl.id === p.id);
-                            return found ? { ...p, folder_id: found.folder_id, position: found.position } : p;
-                        }) || [];
-                        return { ...prev, projects: updatedProjects };
                     });
                     fetch("/projects/reorder", {
                         method: "PATCH",
@@ -1020,7 +995,7 @@ function Sidebar({ sidebar: sidebarProp }) {
                         <div ref={ungroupedRef}>
                         {sidebar?.projects
                             ?.filter((p) => !p.folder_id)
-                            .map((project) => (
+                            ?.map((project) => (
                                 <div
                                     key={project.id}
                                     data-id={project.id}

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { router } from "@inertiajs/react";
 import DatePicker from "@/Components/DatePicker";
 import TiptapEditor from "@/Components/TiptapEditor";
@@ -15,6 +15,45 @@ export default function TaskEditPanel({ task, tags, members = [], onClose, onTas
     const [commentBody, setCommentBody] = useState("");
     const saveTimerRef = useRef(null);
     const descTimerRef = useRef(null);
+    const titleTimerRef = useRef(null);
+
+    const editTaskRef = useRef(editTask);
+
+    useEffect(() => {
+        editTaskRef.current = editTask;
+    }, [editTask]);
+
+    useEffect(() => {
+        setEditTask(JSON.parse(JSON.stringify(task)));
+        setDescHtml(task.description || "");
+    }, [task]);
+
+    const handleTitleChange = (e) => {
+        const value = e.target.value;
+        setEditTask((prev) => ({ ...prev, title: value }));
+        clearTimeout(titleTimerRef.current);
+        titleTimerRef.current = setTimeout(() => {
+            router.patch(
+                `/tasks/${editTaskRef.current?.id}`,
+                { title: value },
+                { preserveScroll: true, preserveState: true },
+            );
+        }, 200);
+    };
+
+    const handleTitleBlur = () => {
+        clearTimeout(titleTimerRef.current);
+        const current = editTaskRef.current;
+        if (current) {
+            const updated = { ...current, title: current.title };
+            onTaskUpdate(updated);
+            router.patch(
+                `/tasks/${current.id}`,
+                { title: current.title },
+                { preserveScroll: true, preserveState: true },
+            );
+        }
+    };
 
     const saveField = useCallback(
         (field, value) => {
@@ -61,7 +100,7 @@ export default function TaskEditPanel({ task, tags, members = [], onClose, onTas
                     { preserveScroll: true, preserveState: true },
                 );
             }
-        }, 500);
+        }, 200);
     };
 
     const addSubtask = () => {
@@ -220,8 +259,8 @@ export default function TaskEditPanel({ task, tags, members = [], onClose, onTas
                         <input
                             type="text"
                             value={editTask.title}
-                            onChange={(e) => setEditTask({ ...editTask, title: e.target.value })}
-                            onBlur={() => saveField("title", editTask.title)}
+                            onChange={handleTitleChange}
+                            onBlur={handleTitleBlur}
                             className="w-full text-lg font-semibold text-gray-900 outline-none ring-0 border-0 bg-transparent placeholder-gray-300"
                             placeholder="Task title..."
                         />
@@ -526,3 +565,6 @@ export default function TaskEditPanel({ task, tags, members = [], onClose, onTas
         </>
     );
 }
+
+
+

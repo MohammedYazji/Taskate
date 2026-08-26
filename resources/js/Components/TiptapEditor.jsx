@@ -72,7 +72,7 @@ export default function TiptapEditor({ content, onUpdate, placeholder = 'Type so
     });
 
     useEffect(() => {
-        if (editor && content !== editor.getHTML()) {
+        if (editor && content !== editor.getHTML() && !editor.isFocused) {
             editor.commands.setContent(content || '', false);
         }
     }, [content]);

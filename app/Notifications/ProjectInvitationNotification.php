@@ -43,7 +43,7 @@ class ProjectInvitationNotification extends Notification implements ShouldQueue
             'inviter_name' => $inviter->name,
             'role' => $this->invitation->role->value,
             'message' => "{$inviter->name} invited you to \"{$project->name}\" as {$this->invitation->role->value}",
-            'action_url' => null,
+            'action_url' => route('projects.show', $project->id),
         ];
     }
 }

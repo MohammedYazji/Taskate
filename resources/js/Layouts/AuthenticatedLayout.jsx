@@ -3,6 +3,7 @@ import { usePage, router } from "@inertiajs/react";
 import Sortable from "sortablejs";
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import Toast from "@/Components/Toast";
+import VerificationBanner from "@/Components/VerificationBanner";
 import NotificationBell from "@/Components/NotificationBell";
 import usePresence from "@/hooks/usePresence";
 
@@ -1781,11 +1782,14 @@ export default function AuthenticatedLayout({ header, children }) {
     const sidebar = props.layoutSidebar || {};
 
     return (
-        <div className="bg-gray-50 h-screen flex overflow-hidden">
+        <div className="bg-gray-50 h-screen flex flex-col overflow-hidden">
             <Toast />
-            <Sidebar sidebar={sidebar} />
-            <div className="flex flex-col flex-1 overflow-hidden min-w-0">
-                <main className="flex-1 overflow-y-auto p-6">{children}</main>
+            <VerificationBanner />
+            <div className="flex flex-1 overflow-hidden">
+                <Sidebar sidebar={sidebar} />
+                <div className="flex flex-col flex-1 overflow-hidden min-w-0">
+                    <main className="flex-1 overflow-y-auto p-6">{children}</main>
+                </div>
             </div>
         </div>
     );

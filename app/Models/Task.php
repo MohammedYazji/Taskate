@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Task extends Model
 {
     protected $fillable = [
-        "user_id","assigned_to_id","project_id","sprint_id","section_id","title","description","is_recurring","priority","importance","status", "due_date", "due_reminder_sent_at", "position"
+        "user_id","assigned_to_id","project_id","sprint_id","section_id","title","description","is_recurring","recurrence_frequency","priority","importance","status", "due_date", "due_reminder_sent_at", "position"
     ];
 
     protected function casts(): array

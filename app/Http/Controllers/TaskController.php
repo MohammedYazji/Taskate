@@ -55,6 +55,7 @@ class TaskController extends Controller
                 'position' => $t->position,
                 'due_date' => $t->due_date ? $t->due_date->format('Y-m-d') : null,
                 'is_recurring' => $t->is_recurring,
+                'recurrence_frequency' => $t->recurrence_frequency,
                 'project_name' => $t->project?->name ?? 'No project',
                 'tag_ids' => $t->tags->pluck('id')->toArray(),
                 'project_id' => $t->project_id,
@@ -149,12 +150,18 @@ class TaskController extends Controller
             return response()->json([
                 'id' => $task->id,
                 'title' => $task->title,
+                'description' => $task->description,
                 'status' => $task->status->value,
                 'priority' => $task->priority->value,
                 'due_date' => $task->due_date ? $task->due_date->format('Y-m-d') : null,
                 'project_id' => $task->project_id,
                 'section_id' => $task->section_id,
+                'position' => $task->position,
                 'is_recurring' => $task->is_recurring,
+                'recurrence_frequency' => $task->recurrence_frequency,
+                'subtasks' => [],
+                'comments' => [],
+                'tag_ids' => $task->tags->pluck('id')->toArray(),
             ]);
         }
 
@@ -182,7 +189,7 @@ class TaskController extends Controller
         $this->taskRepository->update($task, $data);
 
         if ($task->project_id) {
-            broadcast(new TaskUpdated($task, Auth::id()))->toOthers();
+            try { broadcast(new TaskUpdated($task, Auth::id()))->toOthers(); } catch (\Throwable) {}
         }
 
         if (
@@ -204,14 +211,18 @@ class TaskController extends Controller
     }
 
     // === Toggle task completion ===
-    public function toggleComplete(Task $task)
+    public function toggleComplete(Request $request, Task $task)
     {
         $this->authorize('toggleStatus', $task);
 
         $this->taskRepository->toggleComplete($task);
 
         if ($task->project_id) {
-            broadcast(new TaskUpdated($task, Auth::id()))->toOthers();
+            try { broadcast(new TaskUpdated($task, Auth::id()))->toOthers(); } catch (\Throwable) {}
+        }
+
+        if ($request->expectsJson()) {
+            return response()->noContent();
         }
 
         return redirect()->back();
@@ -229,7 +240,7 @@ class TaskController extends Controller
 
         if ($projectId) {
             $task->project_id = $projectId;
-            broadcast(new TaskDeleted($task, Auth::id()))->toOthers();
+            try { broadcast(new TaskDeleted($task, Auth::id()))->toOthers(); } catch (\Throwable) {}
         }
 
         return back()->with('success', 'Task deleted');
@@ -245,7 +256,7 @@ class TaskController extends Controller
         ]);
 
         if ($task->project_id) {
-            broadcast(new TaskUpdated($task, Auth::id()))->toOthers();
+            try { broadcast(new TaskUpdated($task, Auth::id()))->toOthers(); } catch (\Throwable) {}
         }
 
         return back();

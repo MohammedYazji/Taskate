@@ -24,6 +24,7 @@ class StoreTaskRequest extends FormRequest
             'title' => 'required|string|min:3|max:255',
             'description' => 'nullable|string',
             'is_recurring' => 'boolean|nullable',
+            'recurrence_frequency' => 'nullable|string|in:daily,weekly,monthly,yearly,every-week',
             'priority' => [new Enum(Priority::class)],
             'importance' => ['nullable', new Enum(Importance::class)],
             'status' => [new Enum(TaskStatus::class)],

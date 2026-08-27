@@ -20,6 +20,7 @@
     },
     "dependencies": {
         "@inertiajs/react": "^3.6.1",
+        "@phosphor-icons/web": "^2.1.2",
         "@tiptap/core": "^3.27.3",
         "@tiptap/extension-placeholder": "^3.27.3",
         "@tiptap/extension-task-item": "^3.27.3",

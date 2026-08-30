@@ -52,8 +52,9 @@ A clean, minimal task management app built with Laravel. Organize your work into
 
 ## Tech Stack
 
-- **Laravel** for the backend
-- **Alpine.js** for reactive UI without a build step
+- **Laravel + Inertia** for the backend and page-driven frontend
+- **React** for the UI components
+- **Phosphor Icons** for clean, consistent icons
 - **Tiptap** for the rich text editor in task descriptions
 - **SortableJS** for drag and drop
 - **Tailwind CSS** for styling

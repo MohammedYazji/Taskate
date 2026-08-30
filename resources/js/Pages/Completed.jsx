@@ -78,46 +78,41 @@ export default function Completed({ tasks: initialTasks, projects, dateFilter, p
                 </div>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-3">
                 {tasks.length === 0 && (
-                    <div className="text-center text-gray-400 py-12">No completed tasks found</div>
+                    <div className="text-center text-textMuted py-12">No completed tasks found</div>
                 )}
                 {tasks.map((task) => (
                     <div
                         key={task.id}
                         onClick={() => setEditTask(task)}
-                        className="flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-gray-100 hover:border-gray-200 transition cursor-pointer group"
+                        className="bg-white border border-stone opacity-60 p-4 rounded-[2rem] flex items-center gap-4 group transition-all cursor-pointer hover:shadow-tactile"
                     >
                         <button
                             onClick={(e) => { e.stopPropagation(); toggleStatus(task); }}
-                            className="w-5 h-5 rounded-[5px] border-2 flex-shrink-0 flex items-center justify-center transition"
-                            style={{
-                                backgroundColor: task.status === 'done' ? '#14B8A6' : task.status === 'wont_do' ? '#9CA3AF' : 'transparent',
-                                borderColor: task.status === 'done' || task.status === 'wont_do' ? 'transparent' : '#D1D5DB',
-                            }}
+                            className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center cursor-pointer transition ${
+                                task.status === 'done' ? 'border-brand-500 bg-brand-50' : 
+                                task.status === 'wont_do' ? 'border-stone bg-stone/20' : 
+                                'border-stone hover:border-brand-400'
+                            }`}
                         >
                             {task.status === 'done' && (
-                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                                </svg>
+                                <i className="ph ph-check text-brand-600 text-xs"></i>
                             )}
                             {task.status === 'wont_do' && (
-                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M18 6L6 18M6 6l12 12" />
-                                </svg>
+                                <i className="ph ph-x text-textMuted text-xs"></i>
                             )}
                         </button>
-                        <span className="flex-1 text-sm line-through text-gray-400">{task.title}</span>
-                        {task.status === 'wont_do' && (
-                            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">Won't do</span>
-                        )}
-                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
-                            task.priority === 'high' ? 'text-red-500 bg-red-50'
-                                : task.priority === 'medium' ? 'text-orange-500 bg-orange-50'
-                                : 'text-green-600 bg-green-50'
-                        }`}>
-                            {task.priority}
-                        </span>
+
+                        <div className="flex-1 min-w-0">
+                            <h4 className="text-lg font-serif text-ink line-through text-textMuted truncate">
+                                {task.title}
+                            </h4>
+                            <p className="text-xs text-textMuted mt-0.5">
+                                {task.priority && `${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`}
+                                {task.status === 'wont_do' && `${task.priority ? ' • ' : ''}Won't do`}
+                            </p>
+                        </div>
                     </div>
                 ))}
             </div>

@@ -9,8 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tasks', function (Blueprint $table) {
-            $table->foreignId('sprint_id')->nullable()->constrained()->nullOnDelete();
-            $table->integer('position')->default(0);
+            if (! Schema::hasColumn('tasks', 'sprint_id')) {
+                $table->foreignId('sprint_id')->nullable()->constrained()->nullOnDelete();
+            }
+            if (! Schema::hasColumn('tasks', 'position')) {
+                $table->integer('position')->default(0);
+            }
         });
     }
 

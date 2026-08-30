@@ -455,7 +455,7 @@ function Sidebar({ sidebar }) {
         <>
         <aside className="flex h-screen flex-shrink-0">
             {/* Icon Rail */}
-            <div className="w-14 bg-gray-100 flex flex-col items-center py-4 gap-1 flex-shrink-0 border-r border-gray-200">
+            <div className="w-14 bg-paper flex flex-col items-center py-4 gap-1 flex-shrink-0 border-r border-stone">
                 {/* Mobile hamburger */}
                 <button
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -510,7 +510,7 @@ function Sidebar({ sidebar }) {
 
             {/* Context Panel */}
             <div
-                className={`bg-white flex flex-col h-screen flex-shrink-0 border-r border-gray-200 transition-all duration-200 overflow-hidden ${
+                className={`bg-paper flex flex-col h-screen flex-shrink-0 border-r border-stone transition-all duration-200 overflow-hidden ${
                     mobileMenuOpen
                         ? "fixed inset-y-0 left-14 z-50 w-64 shadow-xl"
                         : "hidden lg:flex w-64"
@@ -1782,7 +1782,7 @@ export default function AuthenticatedLayout({ header, children }) {
     const sidebar = props.layoutSidebar || {};
 
     return (
-        <div className="bg-gray-50 h-screen flex flex-col overflow-hidden">
+        <div className="bg-paper h-screen flex flex-col overflow-hidden">
             <Toast />
             <VerificationBanner />
             <div className="flex flex-1 overflow-hidden">

@@ -11,6 +11,15 @@
     display: none !important;
 }
 
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #EAE7E0; border-radius: 10px; }
+
+body {
+    background-color: #FBF9F4;
+    -webkit-font-smoothing: antialiased;
+}
+
 /* Task Editor (Tiptap) */
 .task-editor-area .tiptap {
     outline: none;

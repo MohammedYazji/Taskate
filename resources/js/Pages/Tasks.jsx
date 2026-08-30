@@ -97,10 +97,10 @@ export default function Tasks({ tasks: initialTasks, tags, projects, filters }) 
             <Head title="Tasks" />
 
             <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-semibold text-gray-900">My Tasks</h1>
+                <h1 className="text-2xl font-serif font-bold text-ink">My Tasks</h1>
                 <button
                     onClick={() => setNewOpen(true)}
-                    className="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition flex items-center gap-2"
+                    className="bg-ink hover:bg-ink/90 text-paper text-sm font-medium px-4 py-2 rounded-xl transition flex items-center gap-2"
                 >
                     <span className="text-lg leading-none">+</span> New Task
                 </button>
@@ -110,7 +110,7 @@ export default function Tasks({ tasks: initialTasks, tags, projects, filters }) 
                 <div className="relative">
                     <button
                         onClick={() => { setFilterOpen(!filterOpen); setSortOpen(false); }}
-                        className="text-xs text-gray-500 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition flex items-center gap-1.5"
+                        className="text-xs text-textMuted border border-stone px-3 py-1.5 rounded-xl hover:bg-stone/20 transition flex items-center gap-1.5"
                     >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -121,14 +121,14 @@ export default function Tasks({ tasks: initialTasks, tags, projects, filters }) 
                     {filterOpen && (
                         <>
                             <div className="fixed inset-0 z-10" onClick={() => setFilterOpen(false)} />
-                            <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-3 min-w-48 z-20">
+                            <div className="absolute top-full left-0 mt-1 bg-white border border-stone rounded-2xl shadow-floating p-3 min-w-48 z-20">
                                 <div className="space-y-2">
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-500 mb-1">Priority</label>
+                                        <label className="block text-xs font-medium text-textMuted mb-1">Priority</label>
                                         <select
                                             value={filters?.priority || ''}
                                             onChange={(e) => applyFilters({ priority: e.target.value || undefined })}
-                                            className="w-full text-xs border border-gray-200 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-brand-500"
+                                            className="w-full text-xs border border-stone rounded-xl px-2 py-1 outline-none focus:ring-1 focus:ring-ochre"
                                         >
                                             <option value="">All</option>
                                             <option value="high">High</option>
@@ -137,11 +137,11 @@ export default function Tasks({ tasks: initialTasks, tags, projects, filters }) 
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-500 mb-1">Status</label>
+                                        <label className="block text-xs font-medium text-textMuted mb-1">Status</label>
                                         <select
                                             value={filters?.status || ''}
                                             onChange={(e) => applyFilters({ status: e.target.value || undefined })}
-                                            className="w-full text-xs border border-gray-200 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-brand-500"
+                                            className="w-full text-xs border border-stone rounded-xl px-2 py-1 outline-none focus:ring-1 focus:ring-ochre"
                                         >
                                             <option value="">All</option>
                                             <option value="todo">Todo</option>
@@ -151,7 +151,7 @@ export default function Tasks({ tasks: initialTasks, tags, projects, filters }) 
                                     {hasFilters && (
                                         <button
                                             onClick={clearFilters}
-                                            className="block text-xs text-brand-500 hover:text-brand-600 mt-2"
+                                            className="block text-xs text-brand-600 hover:text-brand-500 mt-2"
                                         >
                                             Clear filters
                                         </button>
@@ -165,7 +165,7 @@ export default function Tasks({ tasks: initialTasks, tags, projects, filters }) 
                 <div className="relative">
                     <button
                         onClick={() => { setSortOpen(!sortOpen); setFilterOpen(false); }}
-                        className="text-xs text-gray-500 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition flex items-center gap-1.5"
+                        className="text-xs text-textMuted border border-stone px-3 py-1.5 rounded-xl hover:bg-stone/20 transition flex items-center gap-1.5"
                     >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7h6M3 12h12M3 17h8" />
@@ -176,18 +176,18 @@ export default function Tasks({ tasks: initialTasks, tags, projects, filters }) 
                     {sortOpen && (
                         <>
                             <div className="fixed inset-0 z-10" onClick={() => setSortOpen(false)} />
-                            <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-3 min-w-48 z-20">
+                            <div className="absolute top-full left-0 mt-1 bg-white border border-stone rounded-2xl shadow-floating p-3 min-w-48 z-20">
                                 <div className="space-y-1">
                                     {SORT_OPTIONS.map((opt) => (
-                                        <label key={opt.value} className="flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-50 cursor-pointer">
+                                        <label key={opt.value} className="flex items-center gap-2 px-2 py-1 rounded-xl hover:bg-stone/20 cursor-pointer">
                                             <input
                                                 type="radio"
                                                 name="sort"
                                                 checked={(filters?.sort || '') === opt.value}
                                                 onChange={() => { applyFilters({ sort: opt.value || undefined }); setSortOpen(false); }}
-                                                className="text-brand-500 focus:ring-brand-500"
+                                                className="text-ochre focus:ring-ochre"
                                             />
-                                            <span className="text-xs text-gray-600">{opt.label}</span>
+                                            <span className="text-xs text-textMain">{opt.label}</span>
                                         </label>
                                     ))}
                                 </div>
@@ -197,65 +197,51 @@ export default function Tasks({ tasks: initialTasks, tags, projects, filters }) 
                 </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+            <div className="space-y-3">
                 {tasks.length === 0 && (
-                    <div className="px-5 py-10 text-center text-gray-400 text-sm">
+                    <div className="text-center text-textMuted text-sm py-10">
                         No tasks yet, create your first one!
                     </div>
                 )}
                 {tasks.map((task) => (
                     <div
                         key={task.id}
-                        className={`flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition cursor-pointer group ${
-                            task.due_date && task.due_date < todayStr && task.status !== 'done' ? 'bg-red-50/40' : ''
-                        }`}
+                        className={`bg-white border ${
+                            task.status === 'in_progress' ? 'border-ochre/30 shadow-tactile' : 'border-stone hover:shadow-tactile'
+                        } ${task.status === 'done' ? 'opacity-60' : ''} p-4 rounded-[2rem] flex items-center gap-4 group transition-all cursor-pointer`}
                         onClick={() => openEdit(task)}
                     >
                         <button
                             onClick={(e) => { e.stopPropagation(); toggleStatus(task); }}
-                            className={`w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center cursor-pointer transition ${
-                                task.status === 'done' ? 'bg-brand-500 border-brand-500 hover:bg-brand-600' : 'border-gray-300 hover:border-brand-400'
+                            className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center cursor-pointer transition ${
+                                task.status === 'done' ? 'border-brand-500 bg-brand-50' : 
+                                'border-stone hover:border-brand-400'
                             }`}
                         >
                             {task.status === 'done' && (
-                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                                </svg>
+                                <i className="ph ph-check text-brand-600 text-xs"></i>
                             )}
                         </button>
 
-                        <span className={`flex-1 min-w-0 text-sm truncate ${task.status === 'done' ? 'line-through text-gray-400' : 'text-gray-800'}`}>
-                            {task.title}
-                        </span>
-
-                        {task.project_name && (
-                            <span className="text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded flex-shrink-0">
-                                {task.project_name}
-                            </span>
-                        )}
-
-                        {task.subtasks?.length > 0 && (
-                            <span className="text-[10px] text-gray-400 flex-shrink-0 tabular-nums">
-                                {task.subtasks.filter((s) => s.is_completed).length}/{task.subtasks.length}
-                            </span>
-                        )}
-
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded uppercase tracking-wide flex-shrink-0 ${
-                            task.priority === 'high' ? 'text-red-500 bg-red-50'
-                                : task.priority === 'medium' ? 'text-orange-500 bg-orange-50'
-                                : 'text-green-600 bg-green-50'
-                        }`}>
-                            {task.priority}
-                        </span>
+                        <div className="flex-1 min-w-0">
+                            <h4 className={`text-lg font-serif text-ink truncate ${task.status === 'done' ? 'line-through text-textMuted' : ''}`}>
+                                {task.title}
+                            </h4>
+                            <p className="text-xs text-textMuted mt-0.5">
+                                {task.priority && `${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`}
+                                {task.priority && task.project_name && ' • '}
+                                {task.project_name && task.project_name}
+                                {(task.priority || task.project_name) && task.subtasks?.length > 0 && ' • '}
+                                {task.subtasks?.length > 0 && `Sub: ${task.subtasks.filter(s => s.is_completed).length}/${task.subtasks.length}`}
+                            </p>
+                        </div>
 
                         <button
                             onClick={(e) => { e.stopPropagation(); deleteTask(task); }}
-                            className="p-1 text-gray-300 hover:text-red-500 rounded transition opacity-0 group-hover:opacity-100 flex-shrink-0"
+                            className="w-8 h-8 rounded-full border border-stone flex items-center justify-center text-textMuted hover:text-terracotta hover:border-terracotta/30 transition opacity-0 group-hover:opacity-100 flex-shrink-0"
                             title="Delete"
                         >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                            <i className="ph ph-trash text-sm"></i>
                         </button>
                     </div>
                 ))}

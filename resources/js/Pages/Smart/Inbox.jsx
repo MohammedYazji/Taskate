@@ -38,68 +38,54 @@ export default function Inbox({ tasks: initialTasks, tags }) {
     return (
         <div className="max-w-4xl mx-auto px-6 py-8">
             <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Inbox</h1>
-                <p className="text-sm text-gray-500 mt-1">Tasks without a project</p>
+                <h1 className="text-2xl font-serif font-bold text-ink">Inbox</h1>
+                <p className="text-sm text-textMuted mt-1">Tasks without a project</p>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200">
-                <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-                    <h2 className="font-semibold text-gray-900">Inbox Tasks</h2>
-                    <span className="text-xs text-gray-400">{tasks.length} task{tasks.length !== 1 ? 's' : ''}</span>
-                </div>
-                <div className="divide-y divide-gray-100">
-                    {tasks.length === 0 && (
-                        <div className="px-5 py-10 text-center text-gray-400 text-sm">Inbox is empty</div>
-                    )}
-                    {tasks.map((task) => (
-                        <div
-                            key={task.id}
-                            className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50/50 transition group cursor-pointer"
-                            onClick={() => openEdit(task)}
+            <div className="space-y-3">
+                {tasks.length === 0 && (
+                    <div className="text-center text-textMuted text-sm py-10">Inbox is empty</div>
+                )}
+                {tasks.map((task) => (
+                    <div
+                        key={task.id}
+                        className={`bg-white border ${
+                            task.status === 'in_progress' ? 'border-ochre/30 shadow-tactile' : 'border-stone hover:shadow-tactile'
+                        } ${task.status === 'done' ? 'opacity-60' : ''} p-4 rounded-[2rem] flex items-center gap-4 group transition-all cursor-pointer`}
+                        onClick={() => openEdit(task)}
+                    >
+                        <button
+                            onClick={(e) => { e.stopPropagation(); toggleStatus(task); }}
+                            className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center cursor-pointer transition ${
+                                task.status === 'done' ? 'border-brand-500 bg-brand-50' : 
+                                'border-stone hover:border-brand-400'
+                            }`}
                         >
-                            <button
-                                onClick={(e) => { e.stopPropagation(); toggleStatus(task); }}
-                                className={`w-[18px] h-[18px] rounded-[5px] border-[1.5px] flex-shrink-0 flex items-center justify-center cursor-pointer transition ${
-                                    task.status === 'done' ? 'bg-brand-500 border-brand-500' : 'border-gray-300 hover:border-brand-400'
-                                }`}
-                            >
-                                {task.status === 'done' && (
-                                    <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                )}
-                            </button>
+                            {task.status === 'done' && (
+                                <i className="ph ph-check text-brand-600 text-xs"></i>
+                            )}
+                        </button>
 
-                            <span className={`flex-1 min-w-0 text-sm truncate transition ${
-                                task.status === 'done' ? 'line-through text-gray-400' : 'text-gray-800'
-                            }`}>
+                        <div className="flex-1 min-w-0">
+                            <h4 className={`text-lg font-serif text-ink truncate ${task.status === 'done' ? 'line-through text-textMuted' : ''}`}>
                                 {task.title}
-                            </span>
-
-                            {task.subtasks?.length > 0 && (
-                                <span className="text-[10px] text-gray-400 flex-shrink-0 tabular-nums">
-                                    {task.subtasks.filter(s => s.is_completed).length}/{task.subtasks.length}
-                                </span>
-                            )}
-
-                            {task.priority && task.priority !== 'medium' && (
-                                <span className={`flex-shrink-0 text-[10px] font-medium capitalize ${PRIORITY_COLORS[task.priority] || ''}`}>
-                                    {task.priority === 'high' ? '!!!' : task.priority === 'low' ? '!' : ''}
-                                </span>
-                            )}
-
-                            <button
-                                onClick={(e) => { e.stopPropagation(); deleteTask(task); }}
-                                className="p-1 text-gray-300 hover:text-red-500 rounded transition opacity-0 group-hover:opacity-100 flex-shrink-0"
-                                title="Delete"
-                            >
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
+                            </h4>
+                            <p className="text-xs text-textMuted mt-0.5">
+                                {task.priority && `${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`}
+                                {(task.priority) && task.subtasks?.length > 0 && ' • '}
+                                {task.subtasks?.length > 0 && `Sub: ${task.subtasks.filter(s => s.is_completed).length}/${task.subtasks.length}`}
+                            </p>
                         </div>
-                    ))}
-                </div>
+
+                        <button
+                            onClick={(e) => { e.stopPropagation(); deleteTask(task); }}
+                            className="w-8 h-8 rounded-full border border-stone flex items-center justify-center text-textMuted hover:text-terracotta hover:border-terracotta/30 transition opacity-0 group-hover:opacity-100 flex-shrink-0"
+                            title="Delete"
+                        >
+                            <i className="ph ph-trash text-sm"></i>
+                        </button>
+                    </div>
+                ))}
             </div>
 
             {editTask && (

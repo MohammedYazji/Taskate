@@ -13,7 +13,9 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['"Public Sans"', ...defaultTheme.fontFamily.sans],
+                serif: ['"Fraunces"', ...defaultTheme.fontFamily.serif],
+                mono: ['"Space Mono"', ...defaultTheme.fontFamily.mono],
             },
             colors: {
                 brand: {
@@ -28,6 +30,18 @@ export default {
                     800: '#115E59',
                     900: '#134E4A',
                 },
+                paper: '#FBF9F4',
+                ink: '#1A1A1A',
+                stone: '#EAE7E0',
+                ochre: '#D4A373',
+                sage: '#CCD5AE',
+                terracotta: '#BC6C25',
+                textMain: '#2D2D2D',
+                textMuted: '#707070',
+            },
+            boxShadow: {
+                tactile: '0 4px 20px -2px rgba(26, 26, 26, 0.05), 0 2px 10px -2px rgba(26, 26, 26, 0.03)',
+                floating: '0 20px 40px -10px rgba(26, 26, 26, 0.08)',
             },
         },
     },

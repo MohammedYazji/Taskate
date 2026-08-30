@@ -28,6 +28,11 @@ class SearchController extends Controller
                 'status' => $t->status->value,
                 'priority' => $t->priority->value,
                 'project_name' => $t->project?->name ?? '',
+                'subtasks' => $t->subtasks->map(fn($s) => [
+                    'id' => $s->id,
+                    'title' => $s->title,
+                    'is_completed' => $s->is_completed,
+                ]),
             ]),
             'query' => $query,
         ]);
